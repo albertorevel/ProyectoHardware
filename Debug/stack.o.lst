@@ -1,0 +1,208 @@
+   1              		.cpu arm7tdmi
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 18, 4
+  11              		.file	"stack.c"
+  21              	.Ltext0:
+  22              		.file 1 "../stack.c"
+ 1883              		.align	2
+ 1884              	dstackPt:
+ 1885 0000 00000000 		.space	4
+ 1886              		.text
+ 1887              		.align	2
+ 1888              		.global	init_stack
+ 1890              	init_stack:
+ 1891              	.LFB0:
+   1:../stack.c    **** #include "44b.h"
+   2:../stack.c    **** #include "44blib.h"
+   3:../stack.c    **** 
+   4:../stack.c    **** extern int timer2_leer();
+   5:../stack.c    **** 
+   6:../stack.c    **** #define DS_SIZE 0x100					// Definimos tamano de la pila
+   7:../stack.c    **** #define DS_END 0xc7ff600
+   8:../stack.c    **** #define DS_START (DS_END + DS_SIZE)		// Definimos limite de la pila
+   9:../stack.c    **** 
+  10:../stack.c    **** volatile static unsigned int * dstackPt;
+  11:../stack.c    **** 
+  12:../stack.c    **** /*--- declaracion de funciones ---*/
+  13:../stack.c    **** void init_stack(void);
+  14:../stack.c    **** void push_debug(int ID_evento, int auxData);
+  15:../stack.c    **** 
+  16:../stack.c    **** 
+  17:../stack.c    **** void init_stack(void)
+  18:../stack.c    **** {
+ 1892              		.loc 1 18 0
+ 1893              		.cfi_startproc
+ 1894              		@ Function supports interworking.
+ 1895              		@ args = 0, pretend = 0, frame = 8
+ 1896              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1897 0000 0DC0A0E1 		mov	ip, sp
+ 1898              	.LCFI0:
+ 1899              		.cfi_def_cfa_register 12
+ 1900 0004 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 1901 0008 04B04CE2 		sub	fp, ip, #4
+ 1902              		.cfi_offset 14, -8
+ 1903              		.cfi_offset 13, -12
+ 1904              		.cfi_offset 11, -16
+ 1905              	.LCFI1:
+ 1906              		.cfi_def_cfa 11, 4
+ 1907 000c 08D04DE2 		sub	sp, sp, #8
+  19:../stack.c    **** 	dstackPt = (unsigned int *) DS_START;
+ 1908              		.loc 1 19 0
+ 1909 0010 4C309FE5 		ldr	r3, .L4
+ 1910 0014 4C209FE5 		ldr	r2, .L4+4
+ 1911 0018 002083E5 		str	r2, [r3, #0]
+  20:../stack.c    **** 	int * ipt;
+  21:../stack.c    **** 	// Ponemos toda la pila a 0
+  22:../stack.c    **** 	for ( ipt = dstackPt - 1; ipt > (unsigned int *) DS_END; ipt-- )
+ 1912              		.loc 1 22 0
+ 1913 001c 40309FE5 		ldr	r3, .L4
+ 1914 0020 003093E5 		ldr	r3, [r3, #0]
+ 1915 0024 043043E2 		sub	r3, r3, #4
+ 1916 0028 10300BE5 		str	r3, [fp, #-16]
+ 1917 002c 050000EA 		b	.L2
+ 1918              	.L3:
+  23:../stack.c    **** 	{
+  24:../stack.c    **** 		(ipt[0]) = 0;
+ 1919              		.loc 1 24 0 discriminator 2
+ 1920 0030 10301BE5 		ldr	r3, [fp, #-16]
+ 1921 0034 0020A0E3 		mov	r2, #0
+ 1922 0038 002083E5 		str	r2, [r3, #0]
+  22:../stack.c    **** 	for ( ipt = dstackPt - 1; ipt > (unsigned int *) DS_END; ipt-- )
+ 1923              		.loc 1 22 0 discriminator 2
+ 1924 003c 10301BE5 		ldr	r3, [fp, #-16]
+ 1925 0040 043043E2 		sub	r3, r3, #4
+ 1926 0044 10300BE5 		str	r3, [fp, #-16]
+ 1927              	.L2:
+  22:../stack.c    **** 	for ( ipt = dstackPt - 1; ipt > (unsigned int *) DS_END; ipt-- )
+ 1928              		.loc 1 22 0 is_stmt 0 discriminator 1
+ 1929 0048 10201BE5 		ldr	r2, [fp, #-16]
+ 1930 004c 18309FE5 		ldr	r3, .L4+8
+ 1931 0050 030052E1 		cmp	r2, r3
+ 1932 0054 F5FFFF8A 		bhi	.L3
+  25:../stack.c    **** 	}
+  26:../stack.c    **** 
+  27:../stack.c    **** }
+ 1933              		.loc 1 27 0 is_stmt 1
+ 1934 0058 0CD04BE2 		sub	sp, fp, #12
+ 1935 005c 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 1936 0060 1EFF2FE1 		bx	lr
+ 1937              	.L5:
+ 1938              		.align	2
+ 1939              	.L4:
+ 1940 0064 00000000 		.word	dstackPt
+ 1941 0068 00F77F0C 		.word	209712896
+ 1942 006c 00F67F0C 		.word	209712640
+ 1943              		.cfi_endproc
+ 1944              	.LFE0:
+ 1946              		.align	2
+ 1947              		.global	push_debug
+ 1949              	push_debug:
+ 1950              	.LFB1:
+  28:../stack.c    **** 
+  29:../stack.c    **** void push_debug(int ID_evento, int auxData)
+  30:../stack.c    **** {
+ 1951              		.loc 1 30 0
+ 1952              		.cfi_startproc
+ 1953              		@ Function supports interworking.
+ 1954              		@ args = 0, pretend = 0, frame = 8
+ 1955              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1956 0070 0DC0A0E1 		mov	ip, sp
+ 1957              	.LCFI2:
+ 1958              		.cfi_def_cfa_register 12
+ 1959 0074 10D82DE9 		stmfd	sp!, {r4, fp, ip, lr, pc}
+ 1960 0078 04B04CE2 		sub	fp, ip, #4
+ 1961              		.cfi_offset 14, -8
+ 1962              		.cfi_offset 13, -12
+ 1963              		.cfi_offset 11, -16
+ 1964              		.cfi_offset 4, -20
+ 1965              	.LCFI3:
+ 1966              		.cfi_def_cfa 11, 4
+ 1967 007c 0CD04DE2 		sub	sp, sp, #12
+ 1968 0080 18000BE5 		str	r0, [fp, #-24]
+ 1969 0084 1C100BE5 		str	r1, [fp, #-28]
+  31:../stack.c    **** 	dstackPt -= 4;
+ 1970              		.loc 1 31 0
+ 1971 0088 88309FE5 		ldr	r3, .L8
+ 1972 008c 003093E5 		ldr	r3, [r3, #0]
+ 1973 0090 102043E2 		sub	r2, r3, #16
+ 1974 0094 7C309FE5 		ldr	r3, .L8
+ 1975 0098 002083E5 		str	r2, [r3, #0]
+  32:../stack.c    **** 	if (dstackPt < (unsigned int *) DS_END)
+ 1976              		.loc 1 32 0
+ 1977 009c 74309FE5 		ldr	r3, .L8
+ 1978 00a0 002093E5 		ldr	r2, [r3, #0]
+ 1979 00a4 70309FE5 		ldr	r3, .L8+4
+ 1980 00a8 030052E1 		cmp	r2, r3
+ 1981 00ac 0700008A 		bhi	.L7
+  33:../stack.c    **** 	{
+  34:../stack.c    **** 		dstackPt = (unsigned int *) DS_START;
+ 1982              		.loc 1 34 0
+ 1983 00b0 60309FE5 		ldr	r3, .L8
+ 1984 00b4 64209FE5 		ldr	r2, .L8+8
+ 1985 00b8 002083E5 		str	r2, [r3, #0]
+  35:../stack.c    **** 		dstackPt -= 4;
+ 1986              		.loc 1 35 0
+ 1987 00bc 54309FE5 		ldr	r3, .L8
+ 1988 00c0 003093E5 		ldr	r3, [r3, #0]
+ 1989 00c4 102043E2 		sub	r2, r3, #16
+ 1990 00c8 48309FE5 		ldr	r3, .L8
+ 1991 00cc 002083E5 		str	r2, [r3, #0]
+ 1992              	.L7:
+  36:../stack.c    **** 	}
+  37:../stack.c    **** 	(dstackPt[0]) = ID_evento;
+ 1993              		.loc 1 37 0
+ 1994 00d0 40309FE5 		ldr	r3, .L8
+ 1995 00d4 003093E5 		ldr	r3, [r3, #0]
+ 1996 00d8 18201BE5 		ldr	r2, [fp, #-24]
+ 1997 00dc 002083E5 		str	r2, [r3, #0]
+  38:../stack.c    **** 	(dstackPt[1]) = timer2_leer();
+ 1998              		.loc 1 38 0
+ 1999 00e0 30309FE5 		ldr	r3, .L8
+ 2000 00e4 003093E5 		ldr	r3, [r3, #0]
+ 2001 00e8 044083E2 		add	r4, r3, #4
+ 2002 00ec FEFFFFEB 		bl	timer2_leer
+ 2003 00f0 0030A0E1 		mov	r3, r0
+ 2004 00f4 003084E5 		str	r3, [r4, #0]
+  39:../stack.c    **** 	(dstackPt[2]) = auxData;
+ 2005              		.loc 1 39 0
+ 2006 00f8 18309FE5 		ldr	r3, .L8
+ 2007 00fc 003093E5 		ldr	r3, [r3, #0]
+ 2008 0100 083083E2 		add	r3, r3, #8
+ 2009 0104 1C201BE5 		ldr	r2, [fp, #-28]
+ 2010 0108 002083E5 		str	r2, [r3, #0]
+  40:../stack.c    **** 
+  41:../stack.c    **** }
+ 2011              		.loc 1 41 0
+ 2012 010c 10D04BE2 		sub	sp, fp, #16
+ 2013 0110 10689DE8 		ldmfd	sp, {r4, fp, sp, lr}
+ 2014 0114 1EFF2FE1 		bx	lr
+ 2015              	.L9:
+ 2016              		.align	2
+ 2017              	.L8:
+ 2018 0118 00000000 		.word	dstackPt
+ 2019 011c FFF57F0C 		.word	209712639
+ 2020 0120 00F77F0C 		.word	209712896
+ 2021              		.cfi_endproc
+ 2022              	.LFE1:
+ 2024              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 stack.c
+C:\Users\TEMP\AppData\Local\Temp\ccXLW5dW.s:1883   .bss:00000000 $d
+C:\Users\TEMP\AppData\Local\Temp\ccXLW5dW.s:1884   .bss:00000000 dstackPt
+C:\Users\TEMP\AppData\Local\Temp\ccXLW5dW.s:1887   .text:00000000 $a
+C:\Users\TEMP\AppData\Local\Temp\ccXLW5dW.s:1890   .text:00000000 init_stack
+C:\Users\TEMP\AppData\Local\Temp\ccXLW5dW.s:1940   .text:00000064 $d
+C:\Users\TEMP\AppData\Local\Temp\ccXLW5dW.s:1946   .text:00000070 $a
+C:\Users\TEMP\AppData\Local\Temp\ccXLW5dW.s:1949   .text:00000070 push_debug
+C:\Users\TEMP\AppData\Local\Temp\ccXLW5dW.s:2018   .text:00000118 $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+timer2_leer

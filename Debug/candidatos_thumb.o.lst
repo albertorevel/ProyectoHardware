@@ -1,0 +1,171 @@
+   1              	# 1 "../candidatos_thumb.asm"
+   1              	.global    sudoku_candidatos_thumb		// Definimos la etiqueta como global para hacerla accesible
+   0              	
+   0              	
+   0              	
+   2              	sudoku_candidatos_thumb:
+   3 0000 04E02DE5 			push {lr}
+   4              			// Preparamos el cambio de ARM a THUMB
+   5 0004 0D308FE2 			ADR		r3, candidatos_thumb_interno+1 /* the last address bit is not really used to specify the add
+   6 0008 00E08FE2 			adr		r14,return		/* we store the return address in r14*/
+   7 000c 13FF2FE1 			BX		r3				/* FUNCTION CALL, we jump to th_mul. +1 indicates that we want to switch to thumb */
+   8              	return:
+   9 0010 04E09DE4 			pop {lr}
+  10 0014 1EFF2FE1 			bx lr
+  11              	
+  12              	
+  13              	###################################################################################################
+  14              	# candidatos_thumb_interno:
+  15              	# Almacena en una máscara todos los valores presentes en la fila, columna o región de la celda dada
+  16              	# almacena esta máscara en los 9 bits menos significativos de la celda.
+  17              	# Parametros:
+  18              	# 	r0: dirección en memoria del sudoku
+  19              	#	r1: fila de la celda
+  20              	#	r2: columna de la celda
+  21              	# Devuelve:
+  22              	#	r0: 1 si la celda esta llena y 0 en caso contrario
+  23              	###################################################################################################
+  24              	.thumb
+  25              	.global candidatos_thumb_interno
+  26              	candidatos_thumb_interno:
+  27 0018 F0B4     			push	{r4-r7}			//preservamos registros almacenándolos en la pila
+  28              	
+  29 001a 4B01     			lsl r3, r1, #5			//actualizamos el puntero de la fila -> fila = fila * 32
+  30 001c 1B18     			add r3, r3, r0			//guardamos la dirección del primer elemento de la fila de la celda
+  31              	
+  32 001e 5400     			lsl r4, r2, #1			//actualizamos el puntero de la columna -> columna = columna * 2
+  33 0020 2418     			add r4, r4, r0			//guardamos la dirección del primer elemento de la columna de la celda
+  34              	
+  35 0022 5500     			lsl r5, r2, #1
+  36 0024 5D19     			add r5, r3, r5  		//guardamos la dirección de la celda [r5 = r3 + 2 * columna]
+  37              	
+  38 0026 6E78     			ldrb r6, [r5,#1]		//vemos si no es pista
+  39 0028 0827     			mov r7, #0x08
+  40 002a 3E40     			and r6, r7
+  41 002c 44D1     			bne pista				//vamos al final del método si es pista
+  42              	
+  43              	//calculamos la dirección del primer elemento de la región
+  44              			//calculamos la fila del elemento (0,3 o 6) y almacenamos en r1
+  45 002e 0626     			mov r6, #6
+  46 0030 B142     			cmp r1, r6
+  47 0032 03DA     			bge segcomp
+  48 0034 0326     			mov r6, #3
+  49 0036 B142     			cmp r1, r6
+  50 0038 00DA     			bge segcomp
+  51 003a 0026     			mov r6, #0
+  52              	
+  53              			//calculamos la columna del elemento (0,3 o 6) y almacenamos en r2
+  54              	segcomp:
+  55 003c 311C     			mov r1, r6		 // guardamos fila calculada
+  56              	
+  57 003e 0626     			mov r6, #6
+  58 0040 B242     			cmp r2, r6
+  59 0042 03DA     			bge fincomp
+  60 0044 0326     			mov r6, #3
+  61 0046 B242     			cmp r2, r6
+  62 0048 00DA     			bge fincomp
+  63 004a 0026     			mov r6, #0
+  64              	
+  65              	fincomp:
+  66 004c 321C     			mov r2, r6		// guardamos la columna calculada
+  67              	
+  68              			//calculamos la dirección del elemento [r0 = sudoku + (32 * r1) + (2 * r2)]
+  69 004e 5200     			lsl r2, r2, #1
+  70 0050 4901     			lsl r1, r1, #5
+  71 0052 4018     			add r0, r1
+  72 0054 8018     			add r0, r2
+  73              	
+  74 0056 0021     			mov r1, #0			//inicializamos la mascara
+  75 0058 0127     			mov r7, #1			//1 auxiliar
+  76 005a 0926     			mov r6, #9 			//init contador
+  77              	
+  78              	//Recorremos la fila activando los bits necesarios en la mascara
+  79              	forfila:
+  80 005c 1A88     			ldrh r2, [r3]
+  81 005e 0233     			add r3, #2
+  82 0060 120B     			lsr r2, r2, #12
+  83 0062 013A     			sub r2, r2, #1
+  84 0064 9740     			lsl r7, r7, r2
+  85 0066 3943     			orr r1, r7
+  86 0068 0127     			mov r7, #1
+  87              	
+  88 006a 013E     			sub r6, #1
+  89 006c F6D1     			bne forfila
+  90              	
+  91              	
+  92 006e 0926     			mov r6, #9			//reiniciamos contador para la columna
+  93              	
+  94              	//Recorremos la columna activando los bits necesarios en la mascara
+  95              	forcolumna:
+  96 0070 2288     			ldrh r2, [r4]
+  97 0072 2034     			add r4, #32
+  98 0074 120B     			lsr r2, r2, #12
+  99 0076 013A     			sub r2, r2, #1
+ 100 0078 9740     			lsl r7, r7, r2
+ 101 007a 3943     			orr r1, r7
+ 102 007c 0127     			mov r7, #1
+ 103              	
+ 104 007e 013E     			sub r6, #1
+ 105 0080 F6D1     			bne forcolumna
+ 106              	
+ 107              	//Recorremos la región activando los bits necesarios en la mascara
+ 108 0082 0326     			mov r6, #3				//contador de filas
+ 109 0084 0323     			mov r3, #3				//contador de columnas
+ 110              	
+ 111              	forregion:
+ 112 0086 0288     			ldrh r2, [r0]
+ 113 0088 0230     			add r0, #2
+ 114 008a 120B     			lsr r2, r2, #12
+ 115 008c 013A     			sub r2, r2, #1
+ 116 008e 9740     			lsl r7, r7, r2
+ 117 0090 3943     			orr r1, r7
+ 118 0092 0127     			mov r7, #1
+ 119              	
+ 120 0094 013E     			sub r6, #1
+ 121 0096 F6D1     			bne forregion
+ 122 0098 0326     			mov r6, #3				// Cambio de fila
+ 123              	
+ 124 009a 1A30     			add r0, #26
+ 125 009c 013B     			sub r3, #1				// Cambio de columna
+ 126 009e F2D1     			bne forregion
+ 127              	
+ 128              	
+ 129              	
+ 130              	//añadimos la máscara a la celda (manteniendo el resto de bits)
+ 131 00a0 6A78     			ldrb r2, [r5,#1]		// Cargamos el primer byte de la celda
+ 132 00a2 FE24     			mov r4, #0XFE			// Borramos el ultimo bit del valor cargado (pertenece a la mascara)
+ 133 00a4 2240     			and r2, r4
+ 134 00a6 1202     			lsl r2, #8
+ 135 00a8 6400     			lsl r4, #1
+ 136 00aa 0334     			add r4, #3				// Invertimos la mascara y la añadimos a la celda
+ 137 00ac 6140     			eor r1, r4
+ 138 00ae 0A43     			orr r2, r1
+ 139              	
+ 140 00b0 2A80     			strh r2, [r5]			// Almacenamos la celda en su posición
+ 141              	
+ 142              	
+ 143 00b2 0020     			mov r0, #0				// Indicamos celda vacia
+ 144              	final:
+ 145 00b4 F0BC     			pop	{r4-r7}
+ 146              	
+ 147 00b6 7047     	        BX      lr
+ 148              	
+ 149              	pista:
+ 150 00b8 0120     			mov r0, #1				// Indicamos celda no vacia
+ 151 00ba FBE7     			b final
+DEFINED SYMBOLS
+../candidatos_thumb.asm:2      .text:00000000 sudoku_candidatos_thumb
+../candidatos_thumb.asm:3      .text:00000000 $a
+../candidatos_thumb.asm:26     .text:00000018 candidatos_thumb_interno
+../candidatos_thumb.asm:8      .text:00000010 return
+../candidatos_thumb.asm:27     .text:00000018 $t
+../candidatos_thumb.asm:149    .text:000000b8 pista
+../candidatos_thumb.asm:54     .text:0000003c segcomp
+../candidatos_thumb.asm:65     .text:0000004c fincomp
+../candidatos_thumb.asm:79     .text:0000005c forfila
+../candidatos_thumb.asm:95     .text:00000070 forcolumna
+../candidatos_thumb.asm:111    .text:00000086 forregion
+../candidatos_thumb.asm:144    .text:000000b4 final
+                   .debug_aranges:0000000c $d
+
+NO UNDEFINED SYMBOLS

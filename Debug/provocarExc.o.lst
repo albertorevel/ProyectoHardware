@@ -1,0 +1,24 @@
+   1              	# 1 "../provocarExc.asm"
+   1              	.global DoUndef
+   0              	
+   0              	
+   0              	
+   2              	DoUndef:
+   3 0000 100000E6 	     .word 0xE6000010
+   4 0004 0EF0A0E1 	     mov pc, lr
+   5              	
+   6              	.global DoDabort
+   7              	DoDabort:
+   8 0008 04009FE5 		ldr r0, =0x0a333333
+   9 000c 000080E5 		str r0, [r0]
+  10 0010 0EF0A0E1 	    mov pc, lr
+  10      3333330A 
+DEFINED SYMBOLS
+  ../provocarExc.asm:2      .text:00000000 DoUndef
+                            .text:00000000 $d
+  ../provocarExc.asm:4      .text:00000004 $a
+  ../provocarExc.asm:7      .text:00000008 DoDabort
+  ../provocarExc.asm:10     .text:00000014 $d
+                   .debug_aranges:0000000c $d
+
+NO UNDEFINED SYMBOLS

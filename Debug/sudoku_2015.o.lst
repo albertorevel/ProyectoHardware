@@ -1,0 +1,909 @@
+   1              		.cpu arm7tdmi
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 18, 4
+  11              		.file	"sudoku_2015.c"
+  21              	.Ltext0:
+  22              		.file 1 "../sudoku_2015.c"
+ 2729              		.align	2
+ 2732              	tiempoCalculo:
+ 2733 0000 00000000 		.space	4
+ 2734              		.global	tiempoTotal
+ 2735              		.align	2
+ 2738              	tiempoTotal:
+ 2739 0004 00000000 		.space	4
+ 2740              		.text
+ 2741              		.align	2
+ 2742              		.global	celda_poner_valor
+ 2744              	celda_poner_valor:
+ 2745              	.LFB0:
+   1:../sudoku_2015.c **** #include<inttypes.h>
+   2:../sudoku_2015.c **** #include <stdio.h>
+   3:../sudoku_2015.c **** 
+   4:../sudoku_2015.c **** // Tamaños de la cuadricula
+   5:../sudoku_2015.c **** // Se utilizan 16 columnas para facilitar la visualización
+   6:../sudoku_2015.c **** enum {NUM_FILAS = 9, NUM_COLUMNAS = 16};
+   7:../sudoku_2015.c **** 
+   8:../sudoku_2015.c **** enum {FALSE = 0, TRUE = 1};
+   9:../sudoku_2015.c **** 
+  10:../sudoku_2015.c **** extern int state;
+  11:../sudoku_2015.c **** extern int fila;
+  12:../sudoku_2015.c **** extern int columna;
+  13:../sudoku_2015.c **** extern int valor;
+  14:../sudoku_2015.c **** 
+  15:../sudoku_2015.c **** unsigned int tiempoCalculo = 0;
+  16:../sudoku_2015.c **** unsigned int tiempoTotal = 0;
+  17:../sudoku_2015.c **** //static const char *num_ascii[] = {"0","1","2","3","4","5","6","7","8","9"};
+  18:../sudoku_2015.c **** 
+  19:../sudoku_2015.c **** 
+  20:../sudoku_2015.c **** typedef uint16_t CELDA;
+  21:../sudoku_2015.c **** // La información de cada celda está agrupada en 16 bits con el siguiente formato (empezando en el 
+  22:../sudoku_2015.c **** // 4 MSB VALOR
+  23:../sudoku_2015.c **** // 1 bit PISTA
+  24:../sudoku_2015.c **** // 1 bit ERROR
+  25:../sudoku_2015.c **** // 1 bit no usado
+  26:../sudoku_2015.c **** // 9 LSB CANDIDATOS
+  27:../sudoku_2015.c **** 
+  28:../sudoku_2015.c **** 
+  29:../sudoku_2015.c **** inline void celda_poner_valor(CELDA *celdaptr, uint8_t val){
+ 2746              		.loc 1 29 0
+ 2747              		.cfi_startproc
+ 2748              		@ Function supports interworking.
+ 2749              		@ args = 0, pretend = 0, frame = 8
+ 2750              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2751 0000 0DC0A0E1 		mov	ip, sp
+ 2752              	.LCFI0:
+ 2753              		.cfi_def_cfa_register 12
+ 2754 0004 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2755 0008 04B04CE2 		sub	fp, ip, #4
+ 2756              		.cfi_offset 14, -8
+ 2757              		.cfi_offset 13, -12
+ 2758              		.cfi_offset 11, -16
+ 2759              	.LCFI1:
+ 2760              		.cfi_def_cfa 11, 4
+ 2761 000c 08D04DE2 		sub	sp, sp, #8
+ 2762 0010 10000BE5 		str	r0, [fp, #-16]
+ 2763 0014 0130A0E1 		mov	r3, r1
+ 2764 0018 11304BE5 		strb	r3, [fp, #-17]
+  30:../sudoku_2015.c **** 	*celdaptr = (*celdaptr & 0x0FFF) | ((val & 0x000F) << 12);
+ 2765              		.loc 1 30 0
+ 2766 001c 10301BE5 		ldr	r3, [fp, #-16]
+ 2767 0020 B030D3E1 		ldrh	r3, [r3, #0]
+ 2768 0024 0338A0E1 		mov	r3, r3, asl #16
+ 2769 0028 2338A0E1 		mov	r3, r3, lsr #16
+ 2770 002c 033AA0E1 		mov	r3, r3, asl #20
+ 2771 0030 233AA0E1 		mov	r3, r3, lsr #20
+ 2772 0034 0338A0E1 		mov	r3, r3, asl #16
+ 2773 0038 2328A0E1 		mov	r2, r3, lsr #16
+ 2774 003c 11305BE5 		ldrb	r3, [fp, #-17]	@ zero_extendqisi2
+ 2775 0040 0336A0E1 		mov	r3, r3, asl #12
+ 2776 0044 0338A0E1 		mov	r3, r3, asl #16
+ 2777 0048 2338A0E1 		mov	r3, r3, lsr #16
+ 2778 004c 033082E1 		orr	r3, r2, r3
+ 2779 0050 0338A0E1 		mov	r3, r3, asl #16
+ 2780 0054 2338A0E1 		mov	r3, r3, lsr #16
+ 2781 0058 0338A0E1 		mov	r3, r3, asl #16
+ 2782 005c 2328A0E1 		mov	r2, r3, lsr #16
+ 2783 0060 10301BE5 		ldr	r3, [fp, #-16]
+ 2784 0064 B020C3E1 		strh	r2, [r3, #0]	@ movhi
+  31:../sudoku_2015.c **** }
+ 2785              		.loc 1 31 0
+ 2786 0068 0CD04BE2 		sub	sp, fp, #12
+ 2787 006c 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2788 0070 1EFF2FE1 		bx	lr
+ 2789              		.cfi_endproc
+ 2790              	.LFE0:
+ 2792              		.align	2
+ 2793              		.global	celda_leer_valor
+ 2795              	celda_leer_valor:
+ 2796              	.LFB1:
+  32:../sudoku_2015.c **** inline uint8_t celda_leer_valor(CELDA celda){
+ 2797              		.loc 1 32 0
+ 2798              		.cfi_startproc
+ 2799              		@ Function supports interworking.
+ 2800              		@ args = 0, pretend = 0, frame = 8
+ 2801              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2802 0074 0DC0A0E1 		mov	ip, sp
+ 2803              	.LCFI2:
+ 2804              		.cfi_def_cfa_register 12
+ 2805 0078 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2806 007c 04B04CE2 		sub	fp, ip, #4
+ 2807              		.cfi_offset 14, -8
+ 2808              		.cfi_offset 13, -12
+ 2809              		.cfi_offset 11, -16
+ 2810              	.LCFI3:
+ 2811              		.cfi_def_cfa 11, 4
+ 2812 0080 08D04DE2 		sub	sp, sp, #8
+ 2813 0084 0030A0E1 		mov	r3, r0
+ 2814 0088 BE304BE1 		strh	r3, [fp, #-14]	@ movhi
+  33:../sudoku_2015.c **** 	return celda >> 12;
+ 2815              		.loc 1 33 0
+ 2816 008c BE305BE1 		ldrh	r3, [fp, #-14]
+ 2817 0090 2336A0E1 		mov	r3, r3, lsr #12
+ 2818 0094 0338A0E1 		mov	r3, r3, asl #16
+ 2819 0098 2338A0E1 		mov	r3, r3, lsr #16
+ 2820 009c FF3003E2 		and	r3, r3, #255
+  34:../sudoku_2015.c **** }
+ 2821              		.loc 1 34 0
+ 2822 00a0 0300A0E1 		mov	r0, r3
+ 2823 00a4 0CD04BE2 		sub	sp, fp, #12
+ 2824 00a8 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2825 00ac 1EFF2FE1 		bx	lr
+ 2826              		.cfi_endproc
+ 2827              	.LFE1:
+ 2829              		.align	2
+ 2830              		.global	celda_leer_candidatos
+ 2832              	celda_leer_candidatos:
+ 2833              	.LFB2:
+  35:../sudoku_2015.c **** inline uint16_t celda_leer_candidatos(CELDA celda){
+ 2834              		.loc 1 35 0
+ 2835              		.cfi_startproc
+ 2836              		@ Function supports interworking.
+ 2837              		@ args = 0, pretend = 0, frame = 8
+ 2838              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2839 00b0 0DC0A0E1 		mov	ip, sp
+ 2840              	.LCFI4:
+ 2841              		.cfi_def_cfa_register 12
+ 2842 00b4 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2843 00b8 04B04CE2 		sub	fp, ip, #4
+ 2844              		.cfi_offset 14, -8
+ 2845              		.cfi_offset 13, -12
+ 2846              		.cfi_offset 11, -16
+ 2847              	.LCFI5:
+ 2848              		.cfi_def_cfa 11, 4
+ 2849 00bc 08D04DE2 		sub	sp, sp, #8
+ 2850 00c0 0030A0E1 		mov	r3, r0
+ 2851 00c4 BE304BE1 		strh	r3, [fp, #-14]	@ movhi
+  36:../sudoku_2015.c **** 	return celda & 0x01FF;
+ 2852              		.loc 1 36 0
+ 2853 00c8 BE305BE1 		ldrh	r3, [fp, #-14]	@ movhi
+ 2854 00cc 833BA0E1 		mov	r3, r3, asl #23
+ 2855 00d0 A33BA0E1 		mov	r3, r3, lsr #23
+ 2856 00d4 0338A0E1 		mov	r3, r3, asl #16
+ 2857 00d8 2338A0E1 		mov	r3, r3, lsr #16
+  37:../sudoku_2015.c **** }
+ 2858              		.loc 1 37 0
+ 2859 00dc 0300A0E1 		mov	r0, r3
+ 2860 00e0 0CD04BE2 		sub	sp, fp, #12
+ 2861 00e4 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2862 00e8 1EFF2FE1 		bx	lr
+ 2863              		.cfi_endproc
+ 2864              	.LFE2:
+ 2866              		.align	2
+ 2867              		.global	es_pista
+ 2869              	es_pista:
+ 2870              	.LFB3:
+  38:../sudoku_2015.c **** inline int es_pista(CELDA celda){
+ 2871              		.loc 1 38 0
+ 2872              		.cfi_startproc
+ 2873              		@ Function supports interworking.
+ 2874              		@ args = 0, pretend = 0, frame = 16
+ 2875              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2876 00ec 0DC0A0E1 		mov	ip, sp
+ 2877              	.LCFI6:
+ 2878              		.cfi_def_cfa_register 12
+ 2879 00f0 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2880 00f4 04B04CE2 		sub	fp, ip, #4
+ 2881              		.cfi_offset 14, -8
+ 2882              		.cfi_offset 13, -12
+ 2883              		.cfi_offset 11, -16
+ 2884              	.LCFI7:
+ 2885              		.cfi_def_cfa 11, 4
+ 2886 00f8 10D04DE2 		sub	sp, sp, #16
+ 2887 00fc 0030A0E1 		mov	r3, r0
+ 2888 0100 B6314BE1 		strh	r3, [fp, #-22]	@ movhi
+  39:../sudoku_2015.c **** 	int res = celda & 0x800;
+ 2889              		.loc 1 39 0
+ 2890 0104 B6315BE1 		ldrh	r3, [fp, #-22]
+ 2891 0108 023B03E2 		and	r3, r3, #2048
+ 2892 010c 10300BE5 		str	r3, [fp, #-16]
+  40:../sudoku_2015.c **** 	return res;
+ 2893              		.loc 1 40 0
+ 2894 0110 10301BE5 		ldr	r3, [fp, #-16]
+  41:../sudoku_2015.c **** }
+ 2895              		.loc 1 41 0
+ 2896 0114 0300A0E1 		mov	r0, r3
+ 2897 0118 0CD04BE2 		sub	sp, fp, #12
+ 2898 011c 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2899 0120 1EFF2FE1 		bx	lr
+ 2900              		.cfi_endproc
+ 2901              	.LFE3:
+ 2903              		.align	2
+ 2904              		.global	sudoku_recalcular_c
+ 2906              	sudoku_recalcular_c:
+ 2907              	.LFB4:
+  42:../sudoku_2015.c **** 
+  43:../sudoku_2015.c **** extern void D8Led_symbol();
+  44:../sudoku_2015.c **** //extern void led1_on();
+  45:../sudoku_2015.c **** //extern void leds_off();
+  46:../sudoku_2015.c **** extern void putData();
+  47:../sudoku_2015.c **** extern void putError();
+  48:../sudoku_2015.c **** extern void putCandidates();
+  49:../sudoku_2015.c **** extern void putPista();
+  50:../sudoku_2015.c **** //extern void putFinal();
+  51:../sudoku_2015.c **** extern void tablero();
+  52:../sudoku_2015.c **** extern int timer2_leer();
+  53:../sudoku_2015.c **** extern void Lcd_Dma_Trans();
+  54:../sudoku_2015.c **** extern void mostrarTiempo();
+  55:../sudoku_2015.c **** extern char* itoa();
+  56:../sudoku_2015.c **** extern int sudoku_candidatos_arm();
+  57:../sudoku_2015.c **** extern Lcd_Clr();
+  58:../sudoku_2015.c **** extern Lcd_Active_Clr();
+  59:../sudoku_2015.c **** 
+  60:../sudoku_2015.c **** 
+  61:../sudoku_2015.c **** ////////////////////////////////////////////////////////////////////////////////
+  62:../sudoku_2015.c **** // Este metodo recorre el sudoku celda por celda, almacenando en una variable las celdas vacias
+  63:../sudoku_2015.c **** // dependiendo del valor que devuelve la ejecucion del metodo candidatos
+  64:../sudoku_2015.c **** // Parametros:
+  65:../sudoku_2015.c **** // 	cuadricula: dirección en memoria del sudoku
+  66:../sudoku_2015.c **** // Devuelve:
+  67:../sudoku_2015.c **** //	numero de celdas vacias, en negativo si hay error
+  68:../sudoku_2015.c **** int sudoku_recalcular_c(CELDA cuadricula[NUM_FILAS][NUM_COLUMNAS]) {
+ 2908              		.loc 1 68 0
+ 2909              		.cfi_startproc
+ 2910              		@ Function supports interworking.
+ 2911              		@ args = 0, pretend = 0, frame = 48
+ 2912              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2913 0124 0DC0A0E1 		mov	ip, sp
+ 2914              	.LCFI8:
+ 2915              		.cfi_def_cfa_register 12
+ 2916 0128 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2917 012c 04B04CE2 		sub	fp, ip, #4
+ 2918              		.cfi_offset 14, -8
+ 2919              		.cfi_offset 13, -12
+ 2920              		.cfi_offset 11, -16
+ 2921              	.LCFI9:
+ 2922              		.cfi_def_cfa 11, 4
+ 2923 0130 30D04DE2 		sub	sp, sp, #48
+ 2924 0134 38000BE5 		str	r0, [fp, #-56]
+  69:../sudoku_2015.c **** 
+  70:../sudoku_2015.c **** 	//Recorre todas las celdas almacenando las celdas vacias
+  71:../sudoku_2015.c **** 	int vacias = 0,x,y;
+ 2925              		.loc 1 71 0
+ 2926 0138 0030A0E3 		mov	r3, #0
+ 2927 013c 10300BE5 		str	r3, [fp, #-16]
+  72:../sudoku_2015.c **** 	int resultado = 0;
+ 2928              		.loc 1 72 0
+ 2929 0140 0030A0E3 		mov	r3, #0
+ 2930 0144 24300BE5 		str	r3, [fp, #-36]
+  73:../sudoku_2015.c **** 	int candidatos = 0;
+ 2931              		.loc 1 73 0
+ 2932 0148 0030A0E3 		mov	r3, #0
+ 2933 014c 28300BE5 		str	r3, [fp, #-40]
+  74:../sudoku_2015.c **** 	unsigned int tiempoTemp = timer2_leer();
+ 2934              		.loc 1 74 0
+ 2935 0150 FEFFFFEB 		bl	timer2_leer
+ 2936 0154 0030A0E1 		mov	r3, r0
+ 2937 0158 2C300BE5 		str	r3, [fp, #-44]
+  75:../sudoku_2015.c **** 	int error = 1;
+ 2938              		.loc 1 75 0
+ 2939 015c 0130A0E3 		mov	r3, #1
+ 2940 0160 1C300BE5 		str	r3, [fp, #-28]
+  76:../sudoku_2015.c **** //	char *valor;
+  77:../sudoku_2015.c **** 	error = 1;
+ 2941              		.loc 1 77 0
+ 2942 0164 0130A0E3 		mov	r3, #1
+ 2943 0168 1C300BE5 		str	r3, [fp, #-28]
+  78:../sudoku_2015.c **** 	for (x = 0; x < NUM_FILAS; x++) {
+ 2944              		.loc 1 78 0
+ 2945 016c 0030A0E3 		mov	r3, #0
+ 2946 0170 14300BE5 		str	r3, [fp, #-20]
+ 2947 0174 5F0000EA 		b	.L6
+ 2948              	.L14:
+  79:../sudoku_2015.c **** 		for (y = 0; y < NUM_FILAS; y++) {
+ 2949              		.loc 1 79 0
+ 2950 0178 0030A0E3 		mov	r3, #0
+ 2951 017c 18300BE5 		str	r3, [fp, #-24]
+ 2952 0180 560000EA 		b	.L7
+ 2953              	.L13:
+ 2954              	.LBB2:
+  80:../sudoku_2015.c **** 
+  81:../sudoku_2015.c **** 			// Lanzamos el metodo candidatos escrito en ARM
+  82:../sudoku_2015.c **** 			resultado = sudoku_candidatos_arm(cuadricula,x,y);
+ 2955              		.loc 1 82 0
+ 2956 0184 38001BE5 		ldr	r0, [fp, #-56]
+ 2957 0188 14101BE5 		ldr	r1, [fp, #-20]
+ 2958 018c 18201BE5 		ldr	r2, [fp, #-24]
+ 2959 0190 FEFFFFEB 		bl	sudoku_candidatos_arm
+ 2960 0194 24000BE5 		str	r0, [fp, #-36]
+  83:../sudoku_2015.c **** 			char buffer [1];
+  84:../sudoku_2015.c **** 			itoa(celda_leer_valor(cuadricula[x][y]),buffer,10);
+ 2961              		.loc 1 84 0
+ 2962 0198 14301BE5 		ldr	r3, [fp, #-20]
+ 2963 019c 8332A0E1 		mov	r3, r3, asl #5
+ 2964 01a0 38201BE5 		ldr	r2, [fp, #-56]
+ 2965 01a4 032082E0 		add	r2, r2, r3
+ 2966 01a8 18301BE5 		ldr	r3, [fp, #-24]
+ 2967 01ac 8330A0E1 		mov	r3, r3, asl #1
+ 2968 01b0 033082E0 		add	r3, r2, r3
+ 2969 01b4 B030D3E1 		ldrh	r3, [r3, #0]
+ 2970 01b8 0300A0E1 		mov	r0, r3
+ 2971 01bc FEFFFFEB 		bl	celda_leer_valor
+ 2972 01c0 0030A0E1 		mov	r3, r0
+ 2973 01c4 0320A0E1 		mov	r2, r3
+ 2974 01c8 30304BE2 		sub	r3, fp, #48
+ 2975 01cc 0200A0E1 		mov	r0, r2
+ 2976 01d0 0310A0E1 		mov	r1, r3
+ 2977 01d4 0A20A0E3 		mov	r2, #10
+ 2978 01d8 FEFFFFEB 		bl	itoa
+  85:../sudoku_2015.c **** 			int pista = 0;
+ 2979              		.loc 1 85 0
+ 2980 01dc 0030A0E3 		mov	r3, #0
+ 2981 01e0 20300BE5 		str	r3, [fp, #-32]
+  86:../sudoku_2015.c **** 			if(es_pista(cuadricula[x][y])) {
+ 2982              		.loc 1 86 0
+ 2983 01e4 14301BE5 		ldr	r3, [fp, #-20]
+ 2984 01e8 8332A0E1 		mov	r3, r3, asl #5
+ 2985 01ec 38201BE5 		ldr	r2, [fp, #-56]
+ 2986 01f0 032082E0 		add	r2, r2, r3
+ 2987 01f4 18301BE5 		ldr	r3, [fp, #-24]
+ 2988 01f8 8330A0E1 		mov	r3, r3, asl #1
+ 2989 01fc 033082E0 		add	r3, r2, r3
+ 2990 0200 B030D3E1 		ldrh	r3, [r3, #0]
+ 2991 0204 0300A0E1 		mov	r0, r3
+ 2992 0208 FEFFFFEB 		bl	es_pista
+ 2993 020c 0030A0E1 		mov	r3, r0
+ 2994 0210 000053E3 		cmp	r3, #0
+ 2995 0214 0400000A 		beq	.L8
+  87:../sudoku_2015.c **** 							putPista(x,y);
+ 2996              		.loc 1 87 0
+ 2997 0218 14001BE5 		ldr	r0, [fp, #-20]
+ 2998 021c 18101BE5 		ldr	r1, [fp, #-24]
+ 2999 0220 FEFFFFEB 		bl	putPista
+  88:../sudoku_2015.c **** 							pista=1;
+ 3000              		.loc 1 88 0
+ 3001 0224 0130A0E3 		mov	r3, #1
+ 3002 0228 20300BE5 		str	r3, [fp, #-32]
+ 3003              	.L8:
+  89:../sudoku_2015.c **** 			}
+  90:../sudoku_2015.c **** 
+  91:../sudoku_2015.c **** 			switch(resultado)
+ 3004              		.loc 1 91 0
+ 3005 022c 24301BE5 		ldr	r3, [fp, #-36]
+ 3006 0230 000053E3 		cmp	r3, #0
+ 3007 0234 0C00000A 		beq	.L11
+ 3008 0238 010053E3 		cmp	r3, #1
+ 3009 023c 1E00000A 		beq	.L12
+ 3010 0240 010073E3 		cmn	r3, #1
+ 3011 0244 2200001A 		bne	.L9
+ 3012              	.L10:
+  92:../sudoku_2015.c **** 			{
+  93:../sudoku_2015.c **** 				case -1 :
+  94:../sudoku_2015.c **** 					error = -1;
+ 3013              		.loc 1 94 0
+ 3014 0248 0030E0E3 		mvn	r3, #0
+ 3015 024c 1C300BE5 		str	r3, [fp, #-28]
+  95:../sudoku_2015.c **** 					//TODO error en celda?
+  96:../sudoku_2015.c **** 					// Pintamos el valor indicando que hay error
+  97:../sudoku_2015.c **** 					putError(buffer,x,y,pista);
+ 3016              		.loc 1 97 0
+ 3017 0250 30304BE2 		sub	r3, fp, #48
+ 3018 0254 0300A0E1 		mov	r0, r3
+ 3019 0258 14101BE5 		ldr	r1, [fp, #-20]
+ 3020 025c 18201BE5 		ldr	r2, [fp, #-24]
+ 3021 0260 20301BE5 		ldr	r3, [fp, #-32]
+ 3022 0264 FEFFFFEB 		bl	putError
+  98:../sudoku_2015.c **** 					break;
+ 3023              		.loc 1 98 0
+ 3024 0268 190000EA 		b	.L9
+ 3025              	.L11:
+  99:../sudoku_2015.c **** 				case FALSE :
+ 100:../sudoku_2015.c **** 					vacias++;
+ 3026              		.loc 1 100 0
+ 3027 026c 10301BE5 		ldr	r3, [fp, #-16]
+ 3028 0270 013083E2 		add	r3, r3, #1
+ 3029 0274 10300BE5 		str	r3, [fp, #-16]
+ 101:../sudoku_2015.c **** 					candidatos = celda_leer_candidatos(cuadricula[x][y]);
+ 3030              		.loc 1 101 0
+ 3031 0278 14301BE5 		ldr	r3, [fp, #-20]
+ 3032 027c 8332A0E1 		mov	r3, r3, asl #5
+ 3033 0280 38201BE5 		ldr	r2, [fp, #-56]
+ 3034 0284 032082E0 		add	r2, r2, r3
+ 3035 0288 18301BE5 		ldr	r3, [fp, #-24]
+ 3036 028c 8330A0E1 		mov	r3, r3, asl #1
+ 3037 0290 033082E0 		add	r3, r2, r3
+ 3038 0294 B030D3E1 		ldrh	r3, [r3, #0]
+ 3039 0298 0300A0E1 		mov	r0, r3
+ 3040 029c FEFFFFEB 		bl	celda_leer_candidatos
+ 3041 02a0 0030A0E1 		mov	r3, r0
+ 3042 02a4 28300BE5 		str	r3, [fp, #-40]
+ 102:../sudoku_2015.c **** 					putCandidates(candidatos,x,y);
+ 3043              		.loc 1 102 0
+ 3044 02a8 28001BE5 		ldr	r0, [fp, #-40]
+ 3045 02ac 14101BE5 		ldr	r1, [fp, #-20]
+ 3046 02b0 18201BE5 		ldr	r2, [fp, #-24]
+ 3047 02b4 FEFFFFEB 		bl	putCandidates
+ 103:../sudoku_2015.c **** 					break;
+ 3048              		.loc 1 103 0
+ 3049 02b8 050000EA 		b	.L9
+ 3050              	.L12:
+ 104:../sudoku_2015.c **** 				case TRUE :
+ 105:../sudoku_2015.c **** 					// Pintamos el valor
+ 106:../sudoku_2015.c **** 					putData(buffer,x,y);
+ 3051              		.loc 1 106 0
+ 3052 02bc 30304BE2 		sub	r3, fp, #48
+ 3053 02c0 0300A0E1 		mov	r0, r3
+ 3054 02c4 14101BE5 		ldr	r1, [fp, #-20]
+ 3055 02c8 18201BE5 		ldr	r2, [fp, #-24]
+ 3056 02cc FEFFFFEB 		bl	putData
+ 107:../sudoku_2015.c **** 					break;
+ 3057              		.loc 1 107 0
+ 3058 02d0 0000A0E1 		mov	r0, r0	@ nop
+ 3059              	.L9:
+ 3060              	.LBE2:
+  79:../sudoku_2015.c **** 		for (y = 0; y < NUM_FILAS; y++) {
+ 3061              		.loc 1 79 0
+ 3062 02d4 18301BE5 		ldr	r3, [fp, #-24]
+ 3063 02d8 013083E2 		add	r3, r3, #1
+ 3064 02dc 18300BE5 		str	r3, [fp, #-24]
+ 3065              	.L7:
+  79:../sudoku_2015.c **** 		for (y = 0; y < NUM_FILAS; y++) {
+ 3066              		.loc 1 79 0 is_stmt 0 discriminator 1
+ 3067 02e0 18301BE5 		ldr	r3, [fp, #-24]
+ 3068 02e4 080053E3 		cmp	r3, #8
+ 3069 02e8 A5FFFFDA 		ble	.L13
+  78:../sudoku_2015.c **** 	for (x = 0; x < NUM_FILAS; x++) {
+ 3070              		.loc 1 78 0 is_stmt 1
+ 3071 02ec 14301BE5 		ldr	r3, [fp, #-20]
+ 3072 02f0 013083E2 		add	r3, r3, #1
+ 3073 02f4 14300BE5 		str	r3, [fp, #-20]
+ 3074              	.L6:
+  78:../sudoku_2015.c **** 	for (x = 0; x < NUM_FILAS; x++) {
+ 3075              		.loc 1 78 0 is_stmt 0 discriminator 1
+ 3076 02f8 14301BE5 		ldr	r3, [fp, #-20]
+ 3077 02fc 080053E3 		cmp	r3, #8
+ 3078 0300 9CFFFFDA 		ble	.L14
+ 108:../sudoku_2015.c **** 			}
+ 109:../sudoku_2015.c **** 
+ 110:../sudoku_2015.c **** 
+ 111:../sudoku_2015.c **** 
+ 112:../sudoku_2015.c **** 		}
+ 113:../sudoku_2015.c **** 	}
+ 114:../sudoku_2015.c **** 	tiempoCalculo += (timer2_leer() - tiempoTemp);
+ 3079              		.loc 1 114 0 is_stmt 1
+ 3080 0304 FEFFFFEB 		bl	timer2_leer
+ 3081 0308 0030A0E1 		mov	r3, r0
+ 3082 030c 0320A0E1 		mov	r2, r3
+ 3083 0310 2C301BE5 		ldr	r3, [fp, #-44]
+ 3084 0314 022063E0 		rsb	r2, r3, r2
+ 3085 0318 44309FE5 		ldr	r3, .L17
+ 3086 031c 003093E5 		ldr	r3, [r3, #0]
+ 3087 0320 032082E0 		add	r2, r2, r3
+ 3088 0324 38309FE5 		ldr	r3, .L17
+ 3089 0328 002083E5 		str	r2, [r3, #0]
+ 115:../sudoku_2015.c **** 	if (vacias != 0)
+ 3090              		.loc 1 115 0
+ 3091 032c 10301BE5 		ldr	r3, [fp, #-16]
+ 3092 0330 000053E3 		cmp	r3, #0
+ 3093 0334 0100000A 		beq	.L15
+ 116:../sudoku_2015.c **** 	{
+ 117:../sudoku_2015.c **** 		Lcd_Dma_Trans();
+ 3094              		.loc 1 117 0
+ 3095 0338 FEFFFFEB 		bl	Lcd_Dma_Trans
+ 3096 033c 010000EA 		b	.L16
+ 3097              	.L15:
+ 118:../sudoku_2015.c **** 	} else {
+ 119:../sudoku_2015.c **** 		Lcd_Clr();
+ 3098              		.loc 1 119 0
+ 3099 0340 FEFFFFEB 		bl	Lcd_Clr
+ 120:../sudoku_2015.c **** 		Lcd_Active_Clr();
+ 3100              		.loc 1 120 0
+ 3101 0344 FEFFFFEB 		bl	Lcd_Active_Clr
+ 3102              	.L16:
+ 121:../sudoku_2015.c **** 	}
+ 122:../sudoku_2015.c **** 	return error * vacias;
+ 3103              		.loc 1 122 0
+ 3104 0348 1C301BE5 		ldr	r3, [fp, #-28]
+ 3105 034c 10201BE5 		ldr	r2, [fp, #-16]
+ 3106 0350 920303E0 		mul	r3, r2, r3
+ 123:../sudoku_2015.c **** 
+ 124:../sudoku_2015.c **** 
+ 125:../sudoku_2015.c **** }
+ 3107              		.loc 1 125 0
+ 3108 0354 0300A0E1 		mov	r0, r3
+ 3109 0358 0CD04BE2 		sub	sp, fp, #12
+ 3110 035c 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3111 0360 1EFF2FE1 		bx	lr
+ 3112              	.L18:
+ 3113              		.align	2
+ 3114              	.L17:
+ 3115 0364 00000000 		.word	tiempoCalculo
+ 3116              		.cfi_endproc
+ 3117              	.LFE4:
+ 3119              		.align	2
+ 3120              		.global	sudoku9x9
+ 3122              	sudoku9x9:
+ 3123              	.LFB5:
+ 126:../sudoku_2015.c **** 
+ 127:../sudoku_2015.c **** ////////////////////////////////////////////////////////////////////////////////
+ 128:../sudoku_2015.c **** // Proceso principal del juego que recibe el tablero,
+ 129:../sudoku_2015.c **** // y la señal de ready que indica que se han actualizado fila y columna
+ 130:../sudoku_2015.c **** int sudoku9x9() {
+ 3124              		.loc 1 130 0
+ 3125              		.cfi_startproc
+ 3126              		@ Function supports interworking.
+ 3127              		@ args = 0, pretend = 0, frame = 296
+ 3128              		@ frame_needed = 1, uses_anonymous_args = 0
+ 3129 0368 0DC0A0E1 		mov	ip, sp
+ 3130              	.LCFI10:
+ 3131              		.cfi_def_cfa_register 12
+ 3132 036c 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 3133 0370 04B04CE2 		sub	fp, ip, #4
+ 3134              		.cfi_offset 14, -8
+ 3135              		.cfi_offset 13, -12
+ 3136              		.cfi_offset 11, -16
+ 3137              	.LCFI11:
+ 3138              		.cfi_def_cfa 11, 4
+ 3139 0374 4ADF4DE2 		sub	sp, sp, #296
+ 131:../sudoku_2015.c **** 
+ 132:../sudoku_2015.c **** 	int celdas_vacias = 0;
+ 3140              		.loc 1 132 0
+ 3141 0378 0030A0E3 		mov	r3, #0
+ 3142 037c 10300BE5 		str	r3, [fp, #-16]
+ 133:../sudoku_2015.c **** 	unsigned int tiempoInit = 0;
+ 3143              		.loc 1 133 0
+ 3144 0380 0030A0E3 		mov	r3, #0
+ 3145 0384 14300BE5 		str	r3, [fp, #-20]
+ 134:../sudoku_2015.c **** 	CELDA cuadricula[NUM_FILAS][NUM_COLUMNAS] __attribute__((aligned(8)))=
+ 3146              		.loc 1 134 0
+ 3147 0388 4D2F4BE2 		sub	r2, fp, #308
+ 3148 038c 123EA0E3 		mov	r3, #288
+ 3149 0390 0200A0E1 		mov	r0, r2
+ 3150 0394 0010A0E3 		mov	r1, #0
+ 3151 0398 0320A0E1 		mov	r2, r3
+ 3152 039c FEFFFFEB 		bl	memset
+ 3153 03a0 F4329FE5 		ldr	r3, .L24
+ 3154 03a4 262BA0E3 		mov	r2, #38912
+ 3155 03a8 0C104BE2 		sub	r1, fp, #12
+ 3156 03ac B32081E1 		strh	r2, [r1, r3]	@ movhi
+ 3157 03b0 E8329FE5 		ldr	r3, .L24+4
+ 3158 03b4 1A2BA0E3 		mov	r2, #26624
+ 3159 03b8 0C104BE2 		sub	r1, fp, #12
+ 3160 03bc B32081E1 		strh	r2, [r1, r3]	@ movhi
+ 3161 03c0 DC329FE5 		ldr	r3, .L24+8
+ 3162 03c4 1E2BA0E3 		mov	r2, #30720
+ 3163 03c8 0C104BE2 		sub	r1, fp, #12
+ 3164 03cc B32081E1 		strh	r2, [r1, r3]	@ movhi
+ 3165 03d0 D0329FE5 		ldr	r3, .L24+12
+ 3166 03d4 222BA0E3 		mov	r2, #34816
+ 3167 03d8 0C104BE2 		sub	r1, fp, #12
+ 3168 03dc B32081E1 		strh	r2, [r1, r3]	@ movhi
+ 3169 03e0 C4329FE5 		ldr	r3, .L24+16
+ 3170 03e4 222BA0E3 		mov	r2, #34816
+ 3171 03e8 0C104BE2 		sub	r1, fp, #12
+ 3172 03ec B32081E1 		strh	r2, [r1, r3]	@ movhi
+ 3173 03f0 123BA0E3 		mov	r3, #18432
+ 3174 03f4 012C4BE2 		sub	r2, fp, #256
+ 3175 03f8 BA3042E1 		strh	r3, [r2, #-10]	@ movhi
+ 3176 03fc 0E3BA0E3 		mov	r3, #14336
+ 3177 0400 011C4BE2 		sub	r1, fp, #256
+ 3178 0404 B83041E1 		strh	r3, [r1, #-8]	@ movhi
+ 3179 0408 063BA0E3 		mov	r3, #6144
+ 3180 040c B43F4BE1 		strh	r3, [fp, #-244]	@ movhi
+ 3181 0410 163BA0E3 		mov	r3, #22528
+ 3182 0414 BE3E4BE1 		strh	r3, [fp, #-238]	@ movhi
+ 3183 0418 063BA0E3 		mov	r3, #6144
+ 3184 041c B83C4BE1 		strh	r3, [fp, #-200]	@ movhi
+ 3185 0420 1E3BA0E3 		mov	r3, #30720
+ 3186 0424 B63C4BE1 		strh	r3, [fp, #-198]	@ movhi
+ 3187 0428 1A3BA0E3 		mov	r3, #26624
+ 3188 042c B43C4BE1 		strh	r3, [fp, #-196]	@ movhi
+ 3189 0430 0A3BA0E3 		mov	r3, #10240
+ 3190 0434 B43B4BE1 		strh	r3, [fp, #-180]	@ movhi
+ 3191 0438 263BA0E3 		mov	r3, #38912
+ 3192 043c BC3A4BE1 		strh	r3, [fp, #-172]	@ movhi
+ 3193 0440 0E3BA0E3 		mov	r3, #14336
+ 3194 0444 BA3A4BE1 		strh	r3, [fp, #-170]	@ movhi
+ 3195 0448 163BA0E3 		mov	r3, #22528
+ 3196 044c B43A4BE1 		strh	r3, [fp, #-164]	@ movhi
+ 3197 0450 1E3BA0E3 		mov	r3, #30720
+ 3198 0454 B4394BE1 		strh	r3, [fp, #-148]	@ movhi
+ 3199 0458 223BA0E3 		mov	r3, #34816
+ 3200 045c B0394BE1 		strh	r3, [fp, #-144]	@ movhi
+ 3201 0460 1E3BA0E3 		mov	r3, #30720
+ 3202 0464 B0374BE1 		strh	r3, [fp, #-112]	@ movhi
+ 3203 0468 0E3BA0E3 		mov	r3, #14336
+ 3204 046c BC364BE1 		strh	r3, [fp, #-108]	@ movhi
+ 3205 0470 0A3BA0E3 		mov	r3, #10240
+ 3206 0474 BA364BE1 		strh	r3, [fp, #-106]	@ movhi
+ 3207 0478 123BA0E3 		mov	r3, #18432
+ 3208 047c B6364BE1 		strh	r3, [fp, #-102]	@ movhi
+ 3209 0480 0E3BA0E3 		mov	r3, #14336
+ 3210 0484 B4354BE1 		strh	r3, [fp, #-84]	@ movhi
+ 3211 0488 223BA0E3 		mov	r3, #34816
+ 3212 048c B2354BE1 		strh	r3, [fp, #-82]	@ movhi
+ 3213 0490 0A3BA0E3 		mov	r3, #10240
+ 3214 0494 B0354BE1 		strh	r3, [fp, #-80]	@ movhi
+ 3215 0498 063BA0E3 		mov	r3, #6144
+ 3216 049c BE344BE1 		strh	r3, [fp, #-78]	@ movhi
+ 3217 04a0 163BA0E3 		mov	r3, #22528
+ 3218 04a4 BA344BE1 		strh	r3, [fp, #-74]	@ movhi
+ 3219 04a8 1A3BA0E3 		mov	r3, #26624
+ 3220 04ac B8344BE1 		strh	r3, [fp, #-72]	@ movhi
+ 3221 04b0 123BA0E3 		mov	r3, #18432
+ 3222 04b4 B2334BE1 		strh	r3, [fp, #-50]	@ movhi
+ 3223 04b8 063BA0E3 		mov	r3, #6144
+ 3224 04bc B0334BE1 		strh	r3, [fp, #-48]	@ movhi
+ 3225 04c0 263BA0E3 		mov	r3, #38912
+ 3226 04c4 BA324BE1 		strh	r3, [fp, #-42]	@ movhi
+ 3227 04c8 163BA0E3 		mov	r3, #22528
+ 3228 04cc B8324BE1 		strh	r3, [fp, #-40]	@ movhi
+ 3229 04d0 0A3BA0E3 		mov	r3, #10240
+ 3230 04d4 B6324BE1 		strh	r3, [fp, #-38]	@ movhi
+ 135:../sudoku_2015.c **** 	{
+ 136:../sudoku_2015.c **** 			0x9800,0x6800,0x0000,0x0000,0x0000,0x0000,0x7800,0x0000,0x8800,0,0,0,0,0,0,0,
+ 137:../sudoku_2015.c **** 			0x8800,0x0000,0x0000,0x0000,0x0000,0x4800,0x3800,0x0000,0x0000,0,0,0,0,0,0,0,
+ 138:../sudoku_2015.c **** 			0x1800,0x0000,0x0000,0x5800,0x0000,0x0000,0x0000,0x0000,0x0000,0,0,0,0,0,0,0,
+ 139:../sudoku_2015.c **** 			0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x1800,0x7800,0x6800,0,0,0,0,0,0,0,
+ 140:../sudoku_2015.c **** 			0x2800,0x0000,0x0000,0x0000,0x9800,0x3800,0x0000,0x0000,0x5800,0,0,0,0,0,0,0,
+ 141:../sudoku_2015.c **** 			0x7800,0x0000,0x8800,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0,0,0,0,0,0,0,
+ 142:../sudoku_2015.c **** 			0x0000,0x0000,0x7800,0x0000,0x3800,0x2800,0x0000,0x4800,0x0000,0,0,0,0,0,0,0,
+ 143:../sudoku_2015.c **** 			0x3800,0x8800,0x2800,0x1800,0x0000,0x5800,0x6800,0x0000,0x0000,0,0,0,0,0,0,0,
+ 144:../sudoku_2015.c **** 			0x0000,0x4800,0x1800,0x0000,0x0000,0x9800,0x5800,0x2800,0x0000,0,0,0,0,0,0,0
+ 145:../sudoku_2015.c **** 	};
+ 146:../sudoku_2015.c **** 
+ 147:../sudoku_2015.c **** //	CELDA cuadricula[NUM_FILAS][NUM_COLUMNAS] __attribute__((aligned(8)))=
+ 148:../sudoku_2015.c **** //	{
+ 149:../sudoku_2015.c **** //			0x9800,0x6800,0x4800,0x3800,0x2800,0x1800,0x7800,0x5800,0x8800,0,0,0,0,0,0,0,
+ 150:../sudoku_2015.c **** //			0x8800,0x7800,0x5800,0x9800,0x6800,0x4800,0x3800,0x1800,0x2800,0,0,0,0,0,0,0,
+ 151:../sudoku_2015.c **** //			0x1800,0x2800,0x0000,0x5800,0x8800,0x7800,0x9800,0x6800,0x4800,0,0,0,0,0,0,0,
+ 152:../sudoku_2015.c **** //			0x4800,0x3800,0x9800,0x2800,0x5800,0x8800,0x1800,0x7800,0x6800,0,0,0,0,0,0,0,
+ 153:../sudoku_2015.c **** //			0x2800,0x1800,0x6800,0x7800,0x9800,0x3800,0x4800,0x8800,0x5800,0,0,0,0,0,0,0,
+ 154:../sudoku_2015.c **** //			0x7800,0x5800,0x8800,0x4800,0x1800,0x6800,0x2800,0x3800,0x9800,0,0,0,0,0,0,0,
+ 155:../sudoku_2015.c **** //			0x5800,0x9800,0x7800,0x6800,0x3800,0x2800,0x8800,0x4800,0x1800,0,0,0,0,0,0,0,
+ 156:../sudoku_2015.c **** //			0x3800,0x8800,0x2800,0x1800,0x4800,0x5800,0x6800,0x9800,0x7800,0,0,0,0,0,0,0,
+ 157:../sudoku_2015.c **** //			0x6800,0x4800,0x1800,0x8800,0x7800,0x9800,0x5800,0x2800,0x3800,0,0,0,0,0,0,0
+ 158:../sudoku_2015.c **** //	};
+ 159:../sudoku_2015.c **** 
+ 160:../sudoku_2015.c **** 	// Iniciamos contadores
+ 161:../sudoku_2015.c **** 	tiempoInit = timer2_leer();
+ 3231              		.loc 1 161 0
+ 3232 04d8 FEFFFFEB 		bl	timer2_leer
+ 3233 04dc 0030A0E1 		mov	r3, r0
+ 3234 04e0 14300BE5 		str	r3, [fp, #-20]
+ 162:../sudoku_2015.c **** 	tiempoCalculo = 0;
+ 3235              		.loc 1 162 0
+ 3236 04e4 C4319FE5 		ldr	r3, .L24+20
+ 3237 04e8 0020A0E3 		mov	r2, #0
+ 3238 04ec 002083E5 		str	r2, [r3, #0]
+ 163:../sudoku_2015.c **** 	tiempoTotal = 0;
+ 3239              		.loc 1 163 0
+ 3240 04f0 BC319FE5 		ldr	r3, .L24+24
+ 3241 04f4 0020A0E3 		mov	r2, #0
+ 3242 04f8 002083E5 		str	r2, [r3, #0]
+ 164:../sudoku_2015.c **** 	// Recalculamos el tablero por primera vez
+ 165:../sudoku_2015.c **** 	celdas_vacias = sudoku_recalcular_c(cuadricula);
+ 3243              		.loc 1 165 0
+ 3244 04fc 4D3F4BE2 		sub	r3, fp, #308
+ 3245 0500 0300A0E1 		mov	r0, r3
+ 3246 0504 FEFFFFEB 		bl	sudoku_recalcular_c
+ 3247 0508 10000BE5 		str	r0, [fp, #-16]
+ 166:../sudoku_2015.c **** 	tiempoTotal = timer2_leer() - tiempoInit;
+ 3248              		.loc 1 166 0
+ 3249 050c FEFFFFEB 		bl	timer2_leer
+ 3250 0510 0030A0E1 		mov	r3, r0
+ 3251 0514 0320A0E1 		mov	r2, r3
+ 3252 0518 14301BE5 		ldr	r3, [fp, #-20]
+ 3253 051c 022063E0 		rsb	r2, r3, r2
+ 3254 0520 8C319FE5 		ldr	r3, .L24+24
+ 3255 0524 002083E5 		str	r2, [r3, #0]
+ 167:../sudoku_2015.c **** 	mostrarTiempo();
+ 3256              		.loc 1 167 0
+ 3257 0528 FEFFFFEB 		bl	mostrarTiempo
+ 168:../sudoku_2015.c **** 
+ 169:../sudoku_2015.c **** 	// Mientras no haya acabado el juego.
+ 170:../sudoku_2015.c **** 	while (state < 5)
+ 3258              		.loc 1 170 0
+ 3259 052c 4E0000EA 		b	.L20
+ 3260              	.L23:
+ 171:../sudoku_2015.c **** 	{
+ 172:../sudoku_2015.c **** 		// Entramos si se ha introducido un cambio
+ 173:../sudoku_2015.c **** 		if (state == 4)
+ 3261              		.loc 1 173 0
+ 3262 0530 80319FE5 		ldr	r3, .L24+28
+ 3263 0534 003093E5 		ldr	r3, [r3, #0]
+ 3264 0538 040053E3 		cmp	r3, #4
+ 3265 053c 4A00001A 		bne	.L20
+ 174:../sudoku_2015.c **** 		{
+ 175:../sudoku_2015.c **** 			if(es_pista(cuadricula[fila - 1][columna - 1]) == 0) {
+ 3266              		.loc 1 175 0
+ 3267 0540 74319FE5 		ldr	r3, .L24+32
+ 3268 0544 003093E5 		ldr	r3, [r3, #0]
+ 3269 0548 012043E2 		sub	r2, r3, #1
+ 3270 054c 6C319FE5 		ldr	r3, .L24+36
+ 3271 0550 003093E5 		ldr	r3, [r3, #0]
+ 3272 0554 013043E2 		sub	r3, r3, #1
+ 3273 0558 0222A0E1 		mov	r2, r2, asl #4
+ 3274 055c 032082E0 		add	r2, r2, r3
+ 3275 0560 34319FE5 		ldr	r3, .L24
+ 3276 0564 8220A0E1 		mov	r2, r2, asl #1
+ 3277 0568 0C104BE2 		sub	r1, fp, #12
+ 3278 056c 022081E0 		add	r2, r1, r2
+ 3279 0570 033082E0 		add	r3, r2, r3
+ 3280 0574 B030D3E1 		ldrh	r3, [r3, #0]
+ 3281 0578 0300A0E1 		mov	r0, r3
+ 3282 057c FEFFFFEB 		bl	es_pista
+ 3283 0580 0030A0E1 		mov	r3, r0
+ 3284 0584 000053E3 		cmp	r3, #0
+ 3285 0588 1500001A 		bne	.L21
+ 176:../sudoku_2015.c **** 				celda_poner_valor(&cuadricula[fila - 1][columna - 1], valor);
+ 3286              		.loc 1 176 0
+ 3287 058c 4D2F4BE2 		sub	r2, fp, #308
+ 3288 0590 24319FE5 		ldr	r3, .L24+32
+ 3289 0594 003093E5 		ldr	r3, [r3, #0]
+ 3290 0598 013043E2 		sub	r3, r3, #1
+ 3291 059c 0312A0E1 		mov	r1, r3, asl #4
+ 3292 05a0 18319FE5 		ldr	r3, .L24+36
+ 3293 05a4 003093E5 		ldr	r3, [r3, #0]
+ 3294 05a8 033081E0 		add	r3, r1, r3
+ 3295 05ac 013043E2 		sub	r3, r3, #1
+ 3296 05b0 8330A0E1 		mov	r3, r3, asl #1
+ 3297 05b4 032082E0 		add	r2, r2, r3
+ 3298 05b8 04319FE5 		ldr	r3, .L24+40
+ 3299 05bc 003093E5 		ldr	r3, [r3, #0]
+ 3300 05c0 FF3003E2 		and	r3, r3, #255
+ 3301 05c4 0200A0E1 		mov	r0, r2
+ 3302 05c8 0310A0E1 		mov	r1, r3
+ 3303 05cc FEFFFFEB 		bl	celda_poner_valor
+ 177:../sudoku_2015.c **** 				tablero();
+ 3304              		.loc 1 177 0
+ 3305 05d0 FEFFFFEB 		bl	tablero
+ 178:../sudoku_2015.c **** 				celdas_vacias = sudoku_recalcular_c(cuadricula);
+ 3306              		.loc 1 178 0
+ 3307 05d4 4D3F4BE2 		sub	r3, fp, #308
+ 3308 05d8 0300A0E1 		mov	r0, r3
+ 3309 05dc FEFFFFEB 		bl	sudoku_recalcular_c
+ 3310 05e0 10000BE5 		str	r0, [fp, #-16]
+ 3311              	.L21:
+ 179:../sudoku_2015.c **** 			}
+ 180:../sudoku_2015.c **** 
+ 181:../sudoku_2015.c **** 			fila = 0;
+ 3312              		.loc 1 181 0
+ 3313 05e4 D0309FE5 		ldr	r3, .L24+32
+ 3314 05e8 0020A0E3 		mov	r2, #0
+ 3315 05ec 002083E5 		str	r2, [r3, #0]
+ 182:../sudoku_2015.c **** 			columna = 0;
+ 3316              		.loc 1 182 0
+ 3317 05f0 C8309FE5 		ldr	r3, .L24+36
+ 3318 05f4 0020A0E3 		mov	r2, #0
+ 3319 05f8 002083E5 		str	r2, [r3, #0]
+ 183:../sudoku_2015.c **** 			valor = 1;
+ 3320              		.loc 1 183 0
+ 3321 05fc C0309FE5 		ldr	r3, .L24+40
+ 3322 0600 0120A0E3 		mov	r2, #1
+ 3323 0604 002083E5 		str	r2, [r3, #0]
+ 184:../sudoku_2015.c **** 
+ 185:../sudoku_2015.c **** 
+ 186:../sudoku_2015.c **** 			//TODO mirar si cambiar
+ 187:../sudoku_2015.c **** 			tiempoTotal = timer2_leer() - tiempoInit;
+ 3324              		.loc 1 187 0
+ 3325 0608 FEFFFFEB 		bl	timer2_leer
+ 3326 060c 0030A0E1 		mov	r3, r0
+ 3327 0610 0320A0E1 		mov	r2, r3
+ 3328 0614 14301BE5 		ldr	r3, [fp, #-20]
+ 3329 0618 022063E0 		rsb	r2, r3, r2
+ 3330 061c 90309FE5 		ldr	r3, .L24+24
+ 3331 0620 002083E5 		str	r2, [r3, #0]
+ 188:../sudoku_2015.c **** 			mostrarTiempo();
+ 3332              		.loc 1 188 0
+ 3333 0624 FEFFFFEB 		bl	mostrarTiempo
+ 189:../sudoku_2015.c **** 			state = 1;
+ 3334              		.loc 1 189 0
+ 3335 0628 88309FE5 		ldr	r3, .L24+28
+ 3336 062c 0120A0E3 		mov	r2, #1
+ 3337 0630 002083E5 		str	r2, [r3, #0]
+ 190:../sudoku_2015.c **** 			if(celdas_vacias == 0) {
+ 3338              		.loc 1 190 0
+ 3339 0634 10301BE5 		ldr	r3, [fp, #-16]
+ 3340 0638 000053E3 		cmp	r3, #0
+ 3341 063c 0500001A 		bne	.L22
+ 191:../sudoku_2015.c **** 				D8Led_symbol(0x000a);
+ 3342              		.loc 1 191 0
+ 3343 0640 0A00A0E3 		mov	r0, #10
+ 3344 0644 FEFFFFEB 		bl	D8Led_symbol
+ 192:../sudoku_2015.c **** 				state = 5;
+ 3345              		.loc 1 192 0
+ 3346 0648 68309FE5 		ldr	r3, .L24+28
+ 3347 064c 0520A0E3 		mov	r2, #5
+ 3348 0650 002083E5 		str	r2, [r3, #0]
+ 3349 0654 040000EA 		b	.L20
+ 3350              	.L22:
+ 193:../sudoku_2015.c **** 			} else {
+ 194:../sudoku_2015.c **** 				D8Led_symbol(0x000f);
+ 3351              		.loc 1 194 0
+ 3352 0658 0F00A0E3 		mov	r0, #15
+ 3353 065c FEFFFFEB 		bl	D8Led_symbol
+ 195:../sudoku_2015.c **** 				state = 1;
+ 3354              		.loc 1 195 0
+ 3355 0660 50309FE5 		ldr	r3, .L24+28
+ 3356 0664 0120A0E3 		mov	r2, #1
+ 3357 0668 002083E5 		str	r2, [r3, #0]
+ 3358              	.L20:
+ 170:../sudoku_2015.c **** 	while (state < 5)
+ 3359              		.loc 1 170 0 discriminator 1
+ 3360 066c 44309FE5 		ldr	r3, .L24+28
+ 3361 0670 003093E5 		ldr	r3, [r3, #0]
+ 3362 0674 040053E3 		cmp	r3, #4
+ 3363 0678 ACFFFFDA 		ble	.L23
+ 196:../sudoku_2015.c **** 
+ 197:../sudoku_2015.c **** 			}
+ 198:../sudoku_2015.c **** 
+ 199:../sudoku_2015.c **** 		}
+ 200:../sudoku_2015.c **** 	}
+ 201:../sudoku_2015.c **** 
+ 202:../sudoku_2015.c **** 	// Juego acabado.
+ 203:../sudoku_2015.c **** 	state = 0;
+ 3364              		.loc 1 203 0
+ 3365 067c 34309FE5 		ldr	r3, .L24+28
+ 3366 0680 0020A0E3 		mov	r2, #0
+ 3367 0684 002083E5 		str	r2, [r3, #0]
+ 204:../sudoku_2015.c **** 	return celdas_vacias;
+ 3368              		.loc 1 204 0
+ 3369 0688 10301BE5 		ldr	r3, [fp, #-16]
+ 205:../sudoku_2015.c **** 
+ 206:../sudoku_2015.c **** 
+ 207:../sudoku_2015.c **** }
+ 3370              		.loc 1 207 0
+ 3371 068c 0300A0E1 		mov	r0, r3
+ 3372 0690 0CD04BE2 		sub	sp, fp, #12
+ 3373 0694 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3374 0698 1EFF2FE1 		bx	lr
+ 3375              	.L25:
+ 3376              		.align	2
+ 3377              	.L24:
+ 3378 069c D8FEFFFF 		.word	-296
+ 3379 06a0 DAFEFFFF 		.word	-294
+ 3380 06a4 E4FEFFFF 		.word	-284
+ 3381 06a8 E8FEFFFF 		.word	-280
+ 3382 06ac F8FEFFFF 		.word	-264
+ 3383 06b0 00000000 		.word	tiempoCalculo
+ 3384 06b4 00000000 		.word	tiempoTotal
+ 3385 06b8 00000000 		.word	state
+ 3386 06bc 00000000 		.word	fila
+ 3387 06c0 00000000 		.word	columna
+ 3388 06c4 00000000 		.word	valor
+ 3389              		.cfi_endproc
+ 3390              	.LFE5:
+ 3392              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 sudoku_2015.c
+C:\Users\TEMP\AppData\Local\Temp\ccbfjdN0.s:2732   .bss:00000000 tiempoCalculo
+C:\Users\TEMP\AppData\Local\Temp\ccbfjdN0.s:2729   .bss:00000000 $d
+C:\Users\TEMP\AppData\Local\Temp\ccbfjdN0.s:2738   .bss:00000004 tiempoTotal
+C:\Users\TEMP\AppData\Local\Temp\ccbfjdN0.s:2741   .text:00000000 $a
+C:\Users\TEMP\AppData\Local\Temp\ccbfjdN0.s:2744   .text:00000000 celda_poner_valor
+C:\Users\TEMP\AppData\Local\Temp\ccbfjdN0.s:2795   .text:00000074 celda_leer_valor
+C:\Users\TEMP\AppData\Local\Temp\ccbfjdN0.s:2832   .text:000000b0 celda_leer_candidatos
+C:\Users\TEMP\AppData\Local\Temp\ccbfjdN0.s:2869   .text:000000ec es_pista
+C:\Users\TEMP\AppData\Local\Temp\ccbfjdN0.s:2906   .text:00000124 sudoku_recalcular_c
+C:\Users\TEMP\AppData\Local\Temp\ccbfjdN0.s:3115   .text:00000364 $d
+C:\Users\TEMP\AppData\Local\Temp\ccbfjdN0.s:3119   .text:00000368 $a
+C:\Users\TEMP\AppData\Local\Temp\ccbfjdN0.s:3122   .text:00000368 sudoku9x9
+C:\Users\TEMP\AppData\Local\Temp\ccbfjdN0.s:3378   .text:0000069c $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+timer2_leer
+sudoku_candidatos_arm
+itoa
+putPista
+putError
+putCandidates
+putData
+Lcd_Dma_Trans
+Lcd_Clr
+Lcd_Active_Clr
+memset
+mostrarTiempo
+tablero
+D8Led_symbol
+state
+fila
+columna
+valor

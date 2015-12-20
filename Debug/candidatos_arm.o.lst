@@ -1,0 +1,172 @@
+   1              	# 1 "../candidatos_arm.asm"
+   1              	###################################################################################################
+   0              	
+   0              	
+   0              	
+   2              	# candidatos_arm:
+   3              	# Almacena en una máscara todos los valores presentes en la fila, columna o región de la celda dada
+   4              	# almacena esta máscara en los 9 bits menos significativos de la celda.
+   5              	# Parametros:
+   6              	# 	r0: dirección en memoria del sudoku
+   7              	#	r1: fila de la celda
+   8              	#	r2: columna de la celda
+   9              	# Devuelve:
+  10              	#	r0: 1 si la celda esta llena y 0 en caso contrario
+  11              	###################################################################################################
+  12              	.global    sudoku_candidatos_arm		// Definimos la etiqueta como global para hacerla accesible
+  13              	sudoku_candidatos_arm:
+  14              	
+  15 0000 70402DE9 			STMFD   sp!, {r4-r6,lr}
+  16              	
+  17 0004 813280E0 			add r3, r0, r1, lsl #5  // guardamos la dirección del primer elemento de la fila de la celda [r3 
+  18 0008 824080E0 			add r4, r0, r2, lsl #1  // guardamos la dirección del primer elemento de la columna de la celda [
+  19 000c 825083E0 			add r5, r3, r2, lsl #1  // guardamos la dirección de la celda [r5 = r3 + 2 * columna]
+  20              	
+  21              	//		ldrh r6, [r5]			// ver si no es pista
+  22              	//		ands r6, r6, #0x0800
+  23              	//		movne r0, #1			// si es pista, pongo r0 a 1, que será la salida, indicando que está ocupada
+  24              	//		bne fin					// si es pista, salto al final
+  25              	
+  26              	//calculamos dirección del primer elemento de la región
+  27              			//calculamos la fila del elemento (0,3 o 6) y almacenamos en r1
+  28 0010 020051E3 			cmp r1, #2
+  29 0014 0010A0D3 			movle r1,#0
+  30 0018 030000DA 			ble segcomp
+  31 001c 050051E3 			cmp r1, #5
+  32 0020 0310A0D3 			movle r1,#3
+  33 0024 000000DA 			ble segcomp
+  34 0028 0610A0E3 			mov r1, #6
+  35              	
+  36              			//calculamos la columna del elemento (0,3 o 6) y almacenamos en r2
+  37              	segcomp:
+  38 002c 020052E3 			cmp r2, #2
+  39 0030 0020A0D3 			movle r2,#0
+  40 0034 030000DA 			ble fincomp
+  41 0038 050052E3 			cmp r2, #5
+  42 003c 0320A0D3 			movle r2,#3
+  43 0040 000000DA 			ble fincomp
+  44 0044 0620A0E3 			mov r2, #6
+  45              	
+  46              	fincomp:
+  47              			//calculamos la dirección del elemento [r0 = sudoku + (32 * r1) + (2 * r2)]
+  48 0048 011282E0 			add r1, r2, r1, lsl #4 //r1 = r2 + r0 * 16
+  49 004c 810080E0 			add r0, r0, r1, lsl #1 //r0 = r0 + r1 * 2
+  50              	
+  51 0050 0010A0E3 			mov r1, #0 	//init mascara
+  52 0054 01C0A0E3 			mov r12, #1  //1 auxiliar
+  53 0058 0060A0E3 			mov r6, #0	//init contador
+  54              	
+  55              	//Recorremos la fila activando los bits necesarios en la mascara
+  56              	forfila:
+  57 005c 050053E1 			cmp r3, r5
+  58 0060 0400000A 			beq minefila
+  59              	
+  60 0064 B020D3E1 			ldrh r2, [r3] 		//cargamos la celda **
+  61 0068 2226A0E1 			mov r2, r2, lsr #12		//guardamos solo el valor de la celda
+  62 006c 012042E2 			sub r2, r2, #1			//restamos uno para el desplazamiento
+  63 0070 1C22A0E1 			mov r2, r12, lsl r2      //preparamos el 1 en el lugar que corresponde para la mascara
+  64 0074 021081E1 			orr r1, r1, r2			//actualizamos máscara
+  65              	
+  66              	minefila:
+  67 0078 023083E2 			add r3, r3, #2
+  68 007c 080056E3 			cmp r6, #8
+  69 0080 0100000A 			beq initcolumna
+  70 0084 016086E2 			add r6, r6, #1
+  71 0088 F3FFFFEA 			b forfila
+  72              	
+  73              	//Recorremos la columna activando los bits necesarios en la mascara
+  74              	initcolumna:
+  75 008c 0060A0E3 			mov r6, #0	//init contador bucle
+  76              	
+  77              	forcolumna:
+  78 0090 050054E1 			cmp r4, r5
+  79 0094 0400000A 			beq minecolumna
+  80              	
+  81 0098 B020D4E1 			ldrh r2, [r4] 		//cargamos la celda **
+  82              	
+  83 009c 2226A0E1 			mov r2, r2, lsr #12		//guardamos solo el valor de la celda
+  84 00a0 012042E2 			sub r2, r2, #1			//restamos uno para el desplazamiento
+  85 00a4 1C22A0E1 			mov r2, r12, lsl r2      //preparamos el 1 en el lugar que corresponde para la mascara
+  86 00a8 021081E1 			orr r1, r1, r2			//actualizamos máscara
+  87              	
+  88              	minecolumna:
+  89 00ac 204084E2 			add r4, r4, #32
+  90 00b0 080056E3 			cmp r6, #8
+  91 00b4 0100000A 			beq initregion
+  92 00b8 016086E2 			add r6, r6, #1
+  93 00bc F3FFFFEA 			b forcolumna
+  94              	
+  95              	//Recorremos la región activando los bits necesarios en la mascara
+  96              	initregion:
+  97 00c0 0360A0E3 			mov r6, #3				//contador de filas
+  98 00c4 0330A0E3 			mov r3, #3				//contador de columnas
+  99              	
+ 100              	forregion:
+ 101 00c8 050050E1 			cmp r0, r5
+ 102 00cc 0400000A 			beq mineregion
+ 103              	
+ 104 00d0 B020D0E1 			ldrh r2, [r0]		//cargamos la celda **
+ 105              	
+ 106 00d4 2226A0E1 			mov r2, r2, lsr #12		//guardamos solo el valor de la celda
+ 107 00d8 012042E2 			sub r2, r2, #1			//restamos uno para el desplazamiento
+ 108 00dc 1C22A0E1 			mov r2, r12, lsl r2     //preparamos el 1 en el lugar que corresponde para la mascara
+ 109 00e0 021081E1 			orr r1, r1, r2			//actualizamos máscara
+ 110              	
+ 111              	mineregion:
+ 112 00e4 020080E2 			add r0, r0, #2
+ 113 00e8 016056E2 			subs r6, r6, #1
+ 114 00ec F5FFFF1A 			bne forregion
+ 115 00f0 0360A0E3 			mov r6, #3				//si hemos recorrido la fila, reiniciamos contador y saltamos
+ 116              	
+ 117              	
+ 118 00f4 013053E2 			subs r3, r3, #1
+ 119 00f8 1A008012 			addne r0, r0, #26		//si hemos acabado iteracion, pero no todas, pasamos a la sigte linea y repeti
+ 120 00fc F1FFFF1A 			bne forregion
+ 121              	
+ 122              	
+ 123              	//Check if error
+ 124 0100 B020D5E1 			ldrh r2, [r5]			//Cargamos el valor de la celda
+ 125 0104 2226A0E1 			mov r2, r2, lsr #12		//guardamos solo el valor de la celda
+ 126 0108 012042E2 			sub r2, r2, #1			//restamos uno para el desplazamiento
+ 127 010c 1C22A0E1 			mov r2, r12, lsl r2
+ 128 0110 012012E0 			ands r2, r2, r1
+ 129 0114 0100A003 			moveq r0, #1
+ 130 0118 0000E013 			movne r0, #-1
+ 131              	
+ 132              	//añadimos la máscara a la celda (manteniendo el resto de bits)
+ 133 011c B020D5E1 			ldrh r2, [r5]			//Cargamos el valor de la celda
+ 134 0120 FE4CA0E3 			mov r4, #0xFE00			//Ponemos la mascara a 0
+ 135 0124 0110E0E1 			mvn r1, r1				// Invertimos la mascara y la añadimos a la celda
+ 136 0128 042002E0 			and r2, r2, r4
+ 137 012c 0440E0E1 			mvn r4, r4
+ 138 0130 041001E0 			and r1, r1, r4
+ 139 0134 012082E1 			orr r2, r2, r1
+ 140 0138 B020C5E1 			strh r2, [r5]			// Almacenamos la celda en su posición
+ 141              	
+ 142 013c 0F3A12E2 			ands r3, r2, #0xF000	// Ponemos a 0 la salida si la celda esta vacia
+ 143 0140 0000A003 			moveq r0, #0
+ 144              	
+ 145              			//Comprobamos si está en la máscara
+ 146              	
+ 147              	fin:
+ 148              	
+ 149 0144 7040BDE8 			LDMFD   sp!, {r4-r6,lr}
+ 150              	        # return to the instruccion that called the rutine and to arm mode
+ 151 0148 1EFF2FE1 	        BX      lr
+DEFINED SYMBOLS
+../candidatos_arm.asm:13     .text:00000000 sudoku_candidatos_arm
+../candidatos_arm.asm:15     .text:00000000 $a
+../candidatos_arm.asm:37     .text:0000002c segcomp
+../candidatos_arm.asm:46     .text:00000048 fincomp
+../candidatos_arm.asm:56     .text:0000005c forfila
+../candidatos_arm.asm:66     .text:00000078 minefila
+../candidatos_arm.asm:74     .text:0000008c initcolumna
+../candidatos_arm.asm:77     .text:00000090 forcolumna
+../candidatos_arm.asm:88     .text:000000ac minecolumna
+../candidatos_arm.asm:96     .text:000000c0 initregion
+../candidatos_arm.asm:100    .text:000000c8 forregion
+../candidatos_arm.asm:111    .text:000000e4 mineregion
+../candidatos_arm.asm:147    .text:00000144 fin
+                   .debug_aranges:0000000c $d
+
+NO UNDEFINED SYMBOLS

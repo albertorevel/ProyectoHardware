@@ -1,0 +1,320 @@
+   1              		.cpu arm7tdmi
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 18, 4
+  11              		.file	"main.c"
+  21              	.Ltext0:
+  22              		.file 1 "../main.c"
+ 2872              		.align	2
+ 2873              		.global	Main
+ 2875              	Main:
+ 2876              	.LFB0:
+   1:../main.c     **** /*********************************************************************************************
+   2:../main.c     **** * Fichero:	main.c
+   3:../main.c     **** * Autor:
+   4:../main.c     **** * Descrip:	punto de entrada de C
+   5:../main.c     **** * Version:  <P4-ARM.timer-leds>
+   6:../main.c     **** *********************************************************************************************/
+   7:../main.c     **** 
+   8:../main.c     **** /*--- ficheros de cabecera ---*/
+   9:../main.c     **** #include "44blib.h"
+  10:../main.c     **** #include "44b.h"
+  11:../main.c     **** #include "stdio.h"
+  12:../main.c     **** 
+  13:../main.c     **** /*--- variables globales ---*/
+  14:../main.c     **** extern int switch_leds;
+  15:../main.c     **** extern int state;
+  16:../main.c     **** int leido;
+  17:../main.c     **** //extern int start;
+  18:../main.c     **** /*--- funciones externas ---*/
+  19:../main.c     **** extern void leds_off();
+  20:../main.c     **** extern void leds_on();
+  21:../main.c     **** extern void led1_on();
+  22:../main.c     **** extern void leds_switch();
+  23:../main.c     **** extern void timer_init();
+  24:../main.c     **** extern void timer2_inicializar();
+  25:../main.c     **** extern void timer2_empezar();
+  26:../main.c     **** extern void timer2_empezar();
+  27:../main.c     **** extern void Eint4567_init();
+  28:../main.c     **** extern void D8Led_init();
+  29:../main.c     **** extern void D8Led_symbol();
+  30:../main.c     **** extern void parpadeos();
+  31:../main.c     **** extern void init_stack();
+  32:../main.c     **** extern int sudoku9x9();
+  33:../main.c     **** extern void Lcd_Init();
+  34:../main.c     **** extern void Lcd_Clr();
+  35:../main.c     **** extern void Lcd_Active_Clr();
+  36:../main.c     **** extern void pantalla_inicial();
+  37:../main.c     **** extern void tablero();
+  38:../main.c     **** //extern void DoUndef();
+  39:../main.c     **** //extern void DoDabort();
+  40:../main.c     **** 
+  41:../main.c     **** /*--- declaracion de funciones ---*/
+  42:../main.c     **** void Main(void);
+  43:../main.c     **** 
+  44:../main.c     **** /*--- codigo de funciones ---*/
+  45:../main.c     **** void Main(void)
+  46:../main.c     **** {
+ 2877              		.loc 1 46 0
+ 2878              		.cfi_startproc
+ 2879              		@ Function supports interworking.
+ 2880              		@ args = 0, pretend = 0, frame = 8
+ 2881              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2882 0000 0DC0A0E1 		mov	ip, sp
+ 2883              	.LCFI0:
+ 2884              		.cfi_def_cfa_register 12
+ 2885 0004 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2886 0008 04B04CE2 		sub	fp, ip, #4
+ 2887              		.cfi_offset 14, -8
+ 2888              		.cfi_offset 13, -12
+ 2889              		.cfi_offset 11, -16
+ 2890              	.LCFI1:
+ 2891              		.cfi_def_cfa 11, 4
+ 2892 000c 08D04DE2 		sub	sp, sp, #8
+  47:../main.c     **** 	int vacias = 0;
+ 2893              		.loc 1 47 0
+ 2894 0010 0030A0E3 		mov	r3, #0
+ 2895 0014 10300BE5 		str	r3, [fp, #-16]
+  48:../main.c     **** 	/* Inicializa controladores */
+  49:../main.c     **** 	sys_init();        // Inicializacion de la placa, interrupciones y puertos
+ 2896              		.loc 1 49 0
+ 2897 0018 FEFFFFEB 		bl	sys_init
+  50:../main.c     **** 	timer_init();	   // Inicializacion del temporizador
+ 2898              		.loc 1 50 0
+ 2899 001c FEFFFFEB 		bl	timer_init
+  51:../main.c     **** 	timer2_inicializar(); //Inicializacion del temporizador2
+ 2900              		.loc 1 51 0
+ 2901 0020 FEFFFFEB 		bl	timer2_inicializar
+  52:../main.c     **** 	Eint4567_init();	// inicializamos los pulsadores. Cada vez que se pulse se verá reflejado en el 8l
+ 2902              		.loc 1 52 0
+ 2903 0024 FEFFFFEB 		bl	Eint4567_init
+  53:../main.c     **** 	D8Led_init(); // inicializamos el 8led
+ 2904              		.loc 1 53 0
+ 2905 0028 FEFFFFEB 		bl	D8Led_init
+  54:../main.c     **** 	init_stack();	//inicializamos la pila de debug
+ 2906              		.loc 1 54 0
+ 2907 002c FEFFFFEB 		bl	init_stack
+  55:../main.c     **** 	Lcd_Init(); //	initial LCD controller
+ 2908              		.loc 1 55 0
+ 2909 0030 FEFFFFEB 		bl	Lcd_Init
+  56:../main.c     **** 
+  57:../main.c     **** 
+  58:../main.c     **** 	/* Valor inicial de los leds */
+  59:../main.c     **** 	leds_off();
+ 2910              		.loc 1 59 0
+ 2911 0034 FEFFFFEB 		bl	leds_off
+  60:../main.c     **** 	led1_on();
+ 2912              		.loc 1 60 0
+ 2913 0038 FEFFFFEB 		bl	led1_on
+  61:../main.c     **** 	/* clear screen */
+  62:../main.c     **** 	Lcd_Clr();
+ 2914              		.loc 1 62 0
+ 2915 003c FEFFFFEB 		bl	Lcd_Clr
+  63:../main.c     **** 	Lcd_Active_Clr();
+ 2916              		.loc 1 63 0
+ 2917 0040 FEFFFFEB 		bl	Lcd_Active_Clr
+  64:../main.c     **** 	timer2_empezar();
+ 2918              		.loc 1 64 0
+ 2919 0044 FEFFFFEB 		bl	timer2_empezar
+  65:../main.c     **** 
+  66:../main.c     **** //	DoDabort();
+  67:../main.c     **** 	pantalla_inicial();
+ 2920              		.loc 1 67 0
+ 2921 0048 FEFFFFEB 		bl	pantalla_inicial
+ 2922              	.LBB2:
+  68:../main.c     **** 	while (1) {
+  69:../main.c     **** 
+  70:../main.c     **** 		while (state == 0)
+ 2923              		.loc 1 70 0
+ 2924 004c 070000EA 		b	.L2
+ 2925              	.L3:
+  71:../main.c     **** 		{
+  72:../main.c     **** 			/* Cambia los leds con cada interrupcion del temporizador */
+  73:../main.c     **** 			if (switch_leds == 1)
+ 2926              		.loc 1 73 0
+ 2927 0050 48309FE5 		ldr	r3, .L5
+ 2928 0054 003093E5 		ldr	r3, [r3, #0]
+ 2929 0058 010053E3 		cmp	r3, #1
+ 2930 005c 0300001A 		bne	.L2
+  74:../main.c     **** 			{
+  75:../main.c     **** 				leds_switch();
+ 2931              		.loc 1 75 0
+ 2932 0060 FEFFFFEB 		bl	leds_switch
+  76:../main.c     **** 				switch_leds = 0;
+ 2933              		.loc 1 76 0
+ 2934 0064 34309FE5 		ldr	r3, .L5
+ 2935 0068 0020A0E3 		mov	r2, #0
+ 2936 006c 002083E5 		str	r2, [r3, #0]
+ 2937              	.L2:
+  70:../main.c     **** 		while (state == 0)
+ 2938              		.loc 1 70 0 discriminator 1
+ 2939 0070 2C309FE5 		ldr	r3, .L5+4
+ 2940 0074 003093E5 		ldr	r3, [r3, #0]
+ 2941 0078 000053E3 		cmp	r3, #0
+ 2942 007c F3FFFF0A 		beq	.L3
+  77:../main.c     **** 			}
+  78:../main.c     **** 		}
+  79:../main.c     **** 		tablero();
+ 2943              		.loc 1 79 0
+ 2944 0080 FEFFFFEB 		bl	tablero
+  80:../main.c     **** 		vacias = sudoku9x9();
+ 2945              		.loc 1 80 0
+ 2946 0084 FEFFFFEB 		bl	sudoku9x9
+ 2947 0088 10000BE5 		str	r0, [fp, #-16]
+  81:../main.c     **** 		pantalla_inicial();
+ 2948              		.loc 1 81 0
+ 2949 008c FEFFFFEB 		bl	pantalla_inicial
+  82:../main.c     **** 		putFinal(vacias);
+ 2950              		.loc 1 82 0
+ 2951 0090 10001BE5 		ldr	r0, [fp, #-16]
+ 2952 0094 FEFFFFEB 		bl	putFinal
+ 2953              	.LBE2:
+  83:../main.c     **** 	}
+ 2954              		.loc 1 83 0
+ 2955 0098 0000A0E1 		mov	r0, r0	@ nop
+ 2956              	.LBB3:
+  70:../main.c     **** 		while (state == 0)
+ 2957              		.loc 1 70 0
+ 2958 009c F3FFFFEA 		b	.L2
+ 2959              	.L6:
+ 2960              		.align	2
+ 2961              	.L5:
+ 2962 00a0 00000000 		.word	switch_leds
+ 2963 00a4 00000000 		.word	state
+ 2964              	.LBE3:
+ 2965              		.cfi_endproc
+ 2966              	.LFE0:
+ 2968              		.align	2
+ 2969              		.global	parpadeos
+ 2971              	parpadeos:
+ 2972              	.LFB1:
+  84:../main.c     **** }
+  85:../main.c     **** 
+  86:../main.c     **** void parpadeos(void)
+  87:../main.c     **** {
+ 2973              		.loc 1 87 0
+ 2974              		.cfi_startproc
+ 2975              		@ Function supports interworking.
+ 2976              		@ args = 0, pretend = 0, frame = 8
+ 2977              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2978 00a8 0DC0A0E1 		mov	ip, sp
+ 2979              	.LCFI2:
+ 2980              		.cfi_def_cfa_register 12
+ 2981 00ac 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2982 00b0 04B04CE2 		sub	fp, ip, #4
+ 2983              		.cfi_offset 14, -8
+ 2984              		.cfi_offset 13, -12
+ 2985              		.cfi_offset 11, -16
+ 2986              	.LCFI3:
+ 2987              		.cfi_def_cfa 11, 4
+ 2988 00b4 08D04DE2 		sub	sp, sp, #8
+  88:../main.c     **** 	int ledvalor = 0x10;
+ 2989              		.loc 1 88 0
+ 2990 00b8 1030A0E3 		mov	r3, #16
+ 2991 00bc 10300BE5 		str	r3, [fp, #-16]
+  89:../main.c     **** 	leds_on();
+ 2992              		.loc 1 89 0
+ 2993 00c0 FEFFFFEB 		bl	leds_on
+  90:../main.c     **** 	int i = 0;
+ 2994              		.loc 1 90 0
+ 2995 00c4 0030A0E3 		mov	r3, #0
+ 2996 00c8 14300BE5 		str	r3, [fp, #-20]
+ 2997              	.L11:
+  91:../main.c     **** 	while (1)
+  92:../main.c     **** 	{
+  93:../main.c     **** 		if (i == 100000)
+ 2998              		.loc 1 93 0
+ 2999 00cc 14201BE5 		ldr	r2, [fp, #-20]
+ 3000 00d0 4C309FE5 		ldr	r3, .L12
+ 3001 00d4 030052E1 		cmp	r2, r3
+ 3002 00d8 0D00001A 		bne	.L8
+  94:../main.c     **** 		{
+  95:../main.c     **** 			if (ledvalor == 0x10) {
+ 3003              		.loc 1 95 0
+ 3004 00dc 10301BE5 		ldr	r3, [fp, #-16]
+ 3005 00e0 100053E3 		cmp	r3, #16
+ 3006 00e4 0300001A 		bne	.L9
+  96:../main.c     **** 				ledvalor = 0xe;
+ 3007              		.loc 1 96 0
+ 3008 00e8 0E30A0E3 		mov	r3, #14
+ 3009 00ec 10300BE5 		str	r3, [fp, #-16]
+  97:../main.c     **** 				leds_off();
+ 3010              		.loc 1 97 0
+ 3011 00f0 FEFFFFEB 		bl	leds_off
+ 3012 00f4 020000EA 		b	.L10
+ 3013              	.L9:
+  98:../main.c     **** 			} else {
+  99:../main.c     **** 				ledvalor = 0x10;
+ 3014              		.loc 1 99 0
+ 3015 00f8 1030A0E3 		mov	r3, #16
+ 3016 00fc 10300BE5 		str	r3, [fp, #-16]
+ 100:../main.c     **** 				leds_on();
+ 3017              		.loc 1 100 0
+ 3018 0100 FEFFFFEB 		bl	leds_on
+ 3019              	.L10:
+ 101:../main.c     **** 			}
+ 102:../main.c     **** 			D8Led_symbol(ledvalor);
+ 3020              		.loc 1 102 0
+ 3021 0104 10001BE5 		ldr	r0, [fp, #-16]
+ 3022 0108 FEFFFFEB 		bl	D8Led_symbol
+ 103:../main.c     **** 			i = 0;
+ 3023              		.loc 1 103 0
+ 3024 010c 0030A0E3 		mov	r3, #0
+ 3025 0110 14300BE5 		str	r3, [fp, #-20]
+ 3026              	.L8:
+ 104:../main.c     **** 
+ 105:../main.c     **** 		}
+ 106:../main.c     **** 		i++;
+ 3027              		.loc 1 106 0
+ 3028 0114 14301BE5 		ldr	r3, [fp, #-20]
+ 3029 0118 013083E2 		add	r3, r3, #1
+ 3030 011c 14300BE5 		str	r3, [fp, #-20]
+ 107:../main.c     **** 	}
+ 3031              		.loc 1 107 0
+ 3032 0120 E9FFFFEA 		b	.L11
+ 3033              	.L13:
+ 3034              		.align	2
+ 3035              	.L12:
+ 3036 0124 A0860100 		.word	100000
+ 3037              		.cfi_endproc
+ 3038              	.LFE1:
+ 3040              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 main.c
+                            *COM*:00000004 leido
+C:\Users\TEMP\AppData\Local\Temp\ccC9cF21.s:2872   .text:00000000 $a
+C:\Users\TEMP\AppData\Local\Temp\ccC9cF21.s:2875   .text:00000000 Main
+C:\Users\TEMP\AppData\Local\Temp\ccC9cF21.s:2962   .text:000000a0 $d
+C:\Users\TEMP\AppData\Local\Temp\ccC9cF21.s:2968   .text:000000a8 $a
+C:\Users\TEMP\AppData\Local\Temp\ccC9cF21.s:2971   .text:000000a8 parpadeos
+C:\Users\TEMP\AppData\Local\Temp\ccC9cF21.s:3036   .text:00000124 $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+sys_init
+timer_init
+timer2_inicializar
+Eint4567_init
+D8Led_init
+init_stack
+Lcd_Init
+leds_off
+led1_on
+Lcd_Clr
+Lcd_Active_Clr
+timer2_empezar
+pantalla_inicial
+leds_switch
+tablero
+sudoku9x9
+putFinal
+switch_leds
+state
+leds_on
+D8Led_symbol

@@ -1,0 +1,60 @@
+   1              	# 1 "../recalcular.asm"
+   1              	###################################################################################################
+   0              	
+   0              	
+   0              	
+   2              	# sudoku_recalcular_arm:
+   3              	# Este metodo recorre el sudoku celda por celda, almacenando en una variable las celdas vacias
+   4              	# dependiendo del valor que devuelve la ejecucion del metodo candidatos
+   5              	# Parametros:
+   6              	# 	r0: dirección en memoria del sudoku
+   7              	#	r1: metodo candidatos a ejecutar (0 para C, 1 para ARM y 2 para THUMB)
+   8              	# Devuelve:
+   9              	#	r0: numero de celdas vacias
+  10              	###################################################################################################
+  11              	.global sudoku_recalcular_arm
+  12              	sudoku_recalcular_arm:
+  13              	
+  14 0000 F0412DE9 			STMFD   sp!, {r4-r8,lr}
+  15              	
+  16 0004 0040A0E3 			mov r4, #0 //vacias = 0
+  17 0008 0050A0E1 			mov r5, r0	// r5 = sudoku
+  18 000c 0180A0E1 			mov r8, r1
+  19 0010 0060A0E3 			mov r6, #0  // r6 = 0 (fila)
+  20              	for1:
+  21 0014 090056E3 			cmp r6, #9
+  22 0018 0E00000A 			beq sal
+  23 001c 0070A0E3 			mov r7, #0  // r7 = 0 (columna)
+  24              	for2:
+  25 0020 090057E3 			cmp r7, #9  //r1 = columna
+  26 0024 01608602 			addeq r6, r6, #1  //fila = fila + 1
+  27 0028 F9FFFF0A 			beq for1
+  28 002c 0500A0E1 			mov r0, r5		//parametro1
+  29 0030 0610A0E1 			mov r1, r6		//parametro2
+  30 0034 0720A0E1 			mov r2, r7		//parametro3
+  31 0038 000058E3 			cmp r8, #0
+  32              			//bleq sudoku_candidatos_c	//Metodo candidatos escrito en C
+  33 003c 010058E3 			cmp r8, #1
+  34 0040 FEFFFF0B 			bleq sudoku_candidatos_arm  //Metodo candidatos escrito en ARM
+  35 0044 020058E3 			cmp r8, #2
+  36              			//bleq sudoku_candidatos_thumb  //Metodo candidatos escrito en THUMB
+  37 0048 000050E3 			cmp r0, #0   //comp si vacia
+  38 004c 01408402 			addeq r4, r4, #1
+  39 0050 017087E2 			add r7, r7, #1  //columna = columna + 1
+  40 0054 F1FFFFEA 			b for2
+  41              	sal:
+  42 0058 0400A0E1 			mov r0, r4
+  43              	
+  44 005c F041BDE8 			LDMFD   sp!, {r4-r8,lr}
+  45              	        # return to the instruccion that called the rutine and to arm mode
+  46 0060 1EFF2FE1 	        BX      lr
+DEFINED SYMBOLS
+   ../recalcular.asm:12     .text:00000000 sudoku_recalcular_arm
+   ../recalcular.asm:14     .text:00000000 $a
+   ../recalcular.asm:20     .text:00000014 for1
+   ../recalcular.asm:41     .text:00000058 sal
+   ../recalcular.asm:24     .text:00000020 for2
+                   .debug_aranges:0000000c $d
+
+UNDEFINED SYMBOLS
+sudoku_candidatos_arm
