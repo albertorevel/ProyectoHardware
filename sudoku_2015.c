@@ -1,8 +1,8 @@
 #include<inttypes.h>
 #include <stdio.h>
 
-// TamaÒos de la cuadricula
-// Se utilizan 16 columnas para facilitar la visualizaciÛn
+// Tama√±os de la cuadricula
+// Se utilizan 16 columnas para facilitar la visualizaci√≥n
 enum {NUM_FILAS = 9, NUM_COLUMNAS = 16};
 
 enum {FALSE = 0, TRUE = 1};
@@ -18,7 +18,7 @@ unsigned int tiempoTotal = 0;
 
 
 typedef uint16_t CELDA;
-// La informaciÛn de cada celda est· agrupada en 16 bits con el siguiente formato (empezando en el bit m·s significativo):
+// La informaci√≥n de cada celda est√° agrupada en 16 bits con el siguiente formato (empezando en el bit m√°s significativo):
 // 4 MSB VALOR
 // 1 bit PISTA
 // 1 bit ERROR
@@ -41,13 +41,10 @@ inline int es_pista(CELDA celda){
 }
 
 extern void D8Led_symbol();
-//extern void led1_on();
-//extern void leds_off();
 extern void putData();
 extern void putError();
 extern void putCandidates();
 extern void putPista();
-//extern void putFinal();
 extern void tablero();
 extern int timer2_leer();
 extern void Lcd_Dma_Trans();
@@ -62,7 +59,7 @@ extern Lcd_Active_Clr();
 // Este metodo recorre el sudoku celda por celda, almacenando en una variable las celdas vacias
 // dependiendo del valor que devuelve la ejecucion del metodo candidatos
 // Parametros:
-// 	cuadricula: direcciÛn en memoria del sudoku
+// 	cuadricula: direcci√≥n en memoria del sudoku
 // Devuelve:
 //	numero de celdas vacias, en negativo si hay error
 int sudoku_recalcular_c(CELDA cuadricula[NUM_FILAS][NUM_COLUMNAS]) {
@@ -73,7 +70,6 @@ int sudoku_recalcular_c(CELDA cuadricula[NUM_FILAS][NUM_COLUMNAS]) {
 	int candidatos = 0;
 	unsigned int tiempoTemp = timer2_leer();
 	int error = 1;
-//	char *valor;
 	error = 1;
 	for (x = 0; x < NUM_FILAS; x++) {
 		for (y = 0; y < NUM_FILAS; y++) {
@@ -92,7 +88,6 @@ int sudoku_recalcular_c(CELDA cuadricula[NUM_FILAS][NUM_COLUMNAS]) {
 			{
 				case -1 :
 					error = -1;
-					//TODO error en celda?
 					// Pintamos el valor indicando que hay error
 					putError(buffer,x,y,pista);
 					break;
@@ -126,7 +121,7 @@ int sudoku_recalcular_c(CELDA cuadricula[NUM_FILAS][NUM_COLUMNAS]) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Proceso principal del juego que recibe el tablero,
-// y la seÒal de ready que indica que se han actualizado fila y columna
+// y la se√±al de ready que indica que se han actualizado fila y columna
 int sudoku9x9() {
 
 	int celdas_vacias = 0;
@@ -182,8 +177,6 @@ int sudoku9x9() {
 			columna = 0;
 			valor = 1;
 
-
-			//TODO mirar si cambiar
 			tiempoTotal = timer2_leer() - tiempoInit;
 			mostrarTiempo();
 			state = 1;
