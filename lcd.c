@@ -497,7 +497,7 @@ void Lcd_Test(void)
     #ifdef Eng_v // english version
 	Lcd_DspAscII8x16(10,0,DARKGRAY,"Embest S3CEV40 ");
 	#else
-//	Lcd_DspHz16(10,0,DARKGRAY,"Ó¢İíÌØÈıĞÇÊµÑéÆÀ¹À°å");
+//	Lcd_DspHz16(10,0,DARKGRAY,"è‹±è““ç‰¹ä¸‰æ˜Ÿå®éªŒè¯„ä¼°æ¿");
 	#endif
 	Lcd_DspAscII8x16(10,20,BLACK,"Codigo del puesto: ");
 	Lcd_Draw_Box(10,40,310,230,14);
@@ -626,7 +626,7 @@ void tablero () {
 
     mostrarTiempo();
 	Lcd_Draw_Box(initX,initY,limitX,limitY,14);
-	// Pintamos las lineas (Horizontales y verticales) que conformaran el tablero e información
+	// Pintamos las lineas (Horizontales y verticales) que conformaran el tablero e informacié«‡
 	int i = 1;
 	for ( i = 1; i < 9; i++) {
 		if( i % 3 == 0)
@@ -647,8 +647,6 @@ void tablero () {
 void putData(char * valor, int x, int y) {
 	int x0 = initX + spawnX * y;
 	int y0 = initY + spawnY * x;
-//	int x1 = x0 + spawnX;
-//	int y1 = y0 + spawnY;
 	Lcd_DspAscII8x16(x0 + 15,y0 + 7,BLACK,valor);
 }
 void putError(char * valor, int x, int y, int pista) {
@@ -660,10 +658,7 @@ void putError(char * valor, int x, int y, int pista) {
 	if (pista==1) {
 		Lcd_Draw_Box(x0 + 5,y0 + 2,x1 - 5,y1 - 3,5);
 	}
-//	Lcd_Draw_Box(x0 + 1,y0 + 1,x1 - 1,y1 - 1,14);
-//	Lcd_Draw_Box(x0 + 2,y0 + 2,x1 - 2,y1 - 2,14);
 	Lcd_DspAscII8x16(x0 + 15,y0 + 7,WHITE,valor);
-	//putData(valor, x, y);
 
 }
 void putPista(int x, int y) {
@@ -684,7 +679,7 @@ void putCandidates(int candidatos, int x, int y) {
 	for ( i = 1; i < 10; i++) {
 		// chek if it's in the mask
 		if(((1 << (i - 1)) & candidatos) != 0) {
-			paintCircle(x0,y0);
+			Lcd_DspAscII8x16(x0,y0,BLACK,"o");
 		}
 
 		// move position ptr
@@ -700,23 +695,18 @@ void putCandidates(int candidatos, int x, int y) {
 	}
 
 }
-void paintCircle(int x, int y) {
-	Lcd_DspAscII8x16(x,y,BLACK,"o");
-//	Lcd_DspAscII8x16(x+1,y+1,BLACK,"..");
-
-}
 
 void putFinal(int celdas_vacias)
 {
-	// Borramos la pantalla
-		mostrarTiempo();
+	
+	mostrarTiempo();
 
-		if(celdas_vacias == 0) {
-			Lcd_DspAscII8x16(0,40,BLACK," ENHORABUENA, HA COMPLETADO EL SUDOKU");
-		} else {
-			Lcd_DspAscII8x16(0,40,BLACK,"Juego abandonado.");
-		}
+	if(celdas_vacias == 0) {
+		Lcd_DspAscII8x16(0,40,BLACK," ENHORABUENA, HA COMPLETADO EL SUDOKU");
+	} else {
+		Lcd_DspAscII8x16(0,40,BLACK,"Juego abandonado.");
+	}
 
-		Lcd_Dma_Trans();
+	Lcd_Dma_Trans();
 }
 
