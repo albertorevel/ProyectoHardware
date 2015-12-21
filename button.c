@@ -11,8 +11,8 @@
 #include "def.h"
 
 /*--- variables globales ---*/
-/* int_count la utilizamos para sacar un n鷐ero por el 8led.
-  Cuando se pulsa un bot髇 sumamos y con el otro restamos.  veces hay rebotes! */
+/* int_count la utilizamos para sacar un n煤mero por el 8led.
+  Cuando se pulsa un bot贸n sumamos y con el otro restamos. 隆A veces hay rebotes! */
 volatile int state = 0;
 volatile int fila = 0;
 volatile int columna = 0;
@@ -31,7 +31,7 @@ static volatile int waitState = 0;
 /*--- declaracion de funciones ---*/
 void Eint4567_ISR(void) __attribute__((interrupt("IRQ")));
 void Eint4567_init(void);
-extern void D8Led_symbol(int value); // declaramos la funci髇 que escribe en el 8led
+extern void D8Led_symbol(int value); // declaramos la funci贸n que escribe en el 8led
 extern void leds_off();
 extern void boton_pulsado(void);
 extern int timer2_leer();
@@ -42,7 +42,7 @@ int esperaFinalizada(void);
 /*--- codigo de funciones ---*/
 void Eint4567_init(void)
 {
-	/* Configuracion del controlador de interrupciones. Estos registros est醤 definidos en 44b.h */
+	/* Configuracion del controlador de interrupciones. Estos registros est谩n definidos en 44b.h */
 	rI_ISPC    = 0x3ffffff;	// Borra INTPND escribiendo 1s en I_ISPC
 	rEXTINTPND = 0xf;       // Borra EXTINTPND escribiendo 1s en el propio registro
 	rINTMOD    = 0x0;		// Configura las linas como de tipo IRQ
@@ -71,7 +71,6 @@ void Eint4567_ISR(void)
 	switch (which_int)
 	{
 		case 4:
-//			mantener = 0;
 			if (state == 0) {
 				state = 1;
 				leds_off();
@@ -98,7 +97,6 @@ void Eint4567_ISR(void)
 			iniciarEspera(100000, 100000);
 			break;
 		case 8:
-//			mantener = -1;
 			if (state == 0)
 			{
 				leds_off();
@@ -135,7 +133,7 @@ void Eint4567_ISR(void)
 	}
 
 
-	D8Led_symbol(int_count & 0x000f); // sacamos el valor por pantalla (m骴ulo 16)
+	D8Led_symbol(int_count & 0x000f); // sacamos el valor por pantalla (m贸dulo 16)
 	/* Finalizar ISR */
 	rEXTINTPND = 0xf;				// borra los bits en EXTINTPND
 	rI_ISPC   |= BIT_EINT4567;		// borra el bit pendiente en INTPND
@@ -154,7 +152,6 @@ int esperaFinalizada(void)
 			rI_ISPC |= BIT_EINT4567;		// borra el bit pendiente en INTPND
 
 			rINTMSK ^= BIT_EINT4567;
-//			mantener = -1;
 			return 1;
 		}
 
@@ -164,7 +161,6 @@ int esperaFinalizada(void)
 				retardo = retardo_trd;
 				tiempo_inicio = timer2_leer();
 				waitState = 0;
-//				mantener = -1;
 				soltado = 1;
 			} else {
 				if (waitState == 1)
@@ -206,35 +202,8 @@ int esperaFinalizada(void)
 					}
 					retardo = 30000;
 					tiempo_inicio = timer2_leer();
-					D8Led_symbol(int_count & 0x000f); // sacamos el valor por pantalla (m骴ulo 16)
+					D8Led_symbol(int_count & 0x000f); // sacamos el valor por pantalla (m贸dulo 16)
 				}
-
-
-
-				//Si no lo hemos soltado
-//				if (mantener > 0 && ((mantener + 300000) > timer2_leer())) {
-//					mantener = timer2_leer();
-//					if (state == 1) {
-//						fila++;
-//						if (fila > 9) {
-//							fila = 1;
-//						}
-//						int_count = fila;
-//					} else if (state == 2) {
-//						columna++;
-//						if (columna > 9) {
-//							columna = 1;
-//						}
-//						int_count = columna;
-//					} else if (state == 3) {
-//						valor++;
-//						if (valor > 9) {
-//							valor = 1;
-//						}
-//						int_count = valor;
-//					}
-//					D8Led_symbol(int_count);
-//				}
 
 				retardo = retardo_trp;
 				tiempo_inicio = timer2_leer();
@@ -248,9 +217,6 @@ int esperaFinalizada(void)
 void iniciarEspera(unsigned int trp, unsigned int trd)
 {
 	tiempo_inicio = timer2_leer();
-//	if( mantener == 0) {
-//		mantener = tiempo_inicio;
-//	}
 	retardo = trp;
 	soltado = 0;
 	waitState = 1;
